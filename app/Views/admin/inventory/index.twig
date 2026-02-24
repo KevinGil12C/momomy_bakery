@@ -1,0 +1,111 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar (Same as dashboard for consistency) -->
+    <aside class="hidden lg:flex flex-col w-72 h-full glass border-r border-white/10 p-6 z-20">
+        <div class="flex items-center gap-4 mb-12 px-2">
+            <div class="size-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30">
+                <span class="material-symbols-outlined">bakery_dining</span>
+            </div>
+            <span class="text-xl font-black text-slate-900 dark:text-white">Momomy</span>
+        </div>
+
+        <nav class="flex-grow space-y-2">
+            <a href="{{ base_url }}admin/dashboard" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+            <a href="{{ base_url }}admin/inventory" class="flex items-center gap-4 px-4 py-3 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined">inventory_2</span> Inventario
+            </a>
+            <a href="{{ base_url }}admin/orders" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+                <span class="material-symbols-outlined">shopping_cart</span> Pedidos
+            </a>
+            <a href="{{ base_url }}admin/quotations" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all">
+                <span class="material-symbols-outlined">description</span> Cotizaciones
+            </a>
+        </nav>
+
+        <div class="mt-auto p-4 bg-slate-100 dark:bg-slate-800/50 rounded-3xl flex items-center gap-4">
+            <div class="size-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">M</div>
+            <div class="flex-grow text-xs truncate">
+                <p class="font-bold text-slate-900 dark:text-white">{{ session.user_name }}</p>
+                <p class="text-slate-500">Administradora</p>
+            </div>
+            <a href="{{ base_url }}logout" class="material-symbols-outlined text-slate-400 hover:text-red-500 transition-colors">logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-20 flex items-center justify-between px-8 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md border-b border-white/10">
+            <h2 class="text-xl font-bold">Gestión de Inventario</h2>
+            <button class="bg-primary text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-105 transition-transform">
+                <span class="material-symbols-outlined text-lg">add</span> Nuevo Postre
+            </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <!-- Filter Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+                <div class="relative w-full max-w-sm">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
+                    <input type="text" placeholder="Buscar postre o categoría..." 
+                        class="w-full pl-12 pr-4 py-3 rounded-2xl border-0 bg-white dark:bg-slate-800/50 shadow-sm focus:ring-2 focus:ring-primary outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-4 py-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-sm">filter_list</span> Filtrar</button>
+                    <button class="px-4 py-3 rounded-xl bg-white dark:bg-slate-800 shadow-sm text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-sm">download</span> Exportar</button>
+                </div>
+            </div>
+
+            <!-- Inventory Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                {% for product in products %}
+                <div class="glass border border-white/20 dark:border-white/5 rounded-[2.5rem] overflow-hidden shadow-xl group transition-all hover:-translate-y-1">
+                    <div class="aspect-[4/3] relative overflow-hidden">
+                        <img src="{{ product.image_url|default('https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80') }}" 
+                             alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute top-4 right-4 px-3 py-1 bg-white/90 dark:bg-slate-900/90 rounded-full text-[10px] font-black uppercase text-primary border border-primary/10">
+                            {{ product.category }}
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-2">
+                            <h3 class="font-bold text-lg truncate pr-2">{{ product.name }}</h3>
+                            <span class="text-primary font-black text-lg">${{ product.price }}</span>
+                        </div>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 mb-4 h-10">
+                            {{ product.description|default('Sin descripción detallada.') }}
+                        </p>
+                        
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+                            <div class="flex items-center gap-2">
+                                <span class="size-2 rounded-full {{ product.stock > 10 ? 'bg-green-500' : 'bg-orange-500' }}"></span>
+                                <span class="text-xs font-bold">{{ product.stock }} unidades</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button class="size-10 rounded-xl hover:bg-primary/10 hover:text-primary text-slate-400 transition-colors flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-xl">edit</span>
+                                </button>
+                                <button class="size-10 rounded-xl hover:bg-red-500/10 hover:text-red-500 text-slate-400 transition-colors flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-xl">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-full py-20 text-center">
+                    <div class="inline-flex size-20 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mb-4">
+                        <span class="material-symbols-outlined text-4xl">inventory_2</span>
+                    </div>
+                    <h3 class="text-xl font-bold">No hay productos aún</h3>
+                    <p class="text-slate-500">Comienza agregando tu primer dulce postre.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

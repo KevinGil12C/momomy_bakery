@@ -1,0 +1,54 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-background-light to-background-light dark:from-primary/20 dark:via-background-dark dark:to-background-dark">
+    <div class="w-full max-w-md">
+        <!-- Logo/Header -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center size-16 rounded-3xl bg-primary text-white shadow-xl shadow-primary/30 mb-6">
+                <span class="material-symbols-outlined text-4xl">verified_user</span>
+            </div>
+            <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Verificación</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Seguridad de Dos Factores</p>
+        </div>
+
+        <!-- 2FA Card -->
+        <div class="glass border border-white/20 dark:border-white/5 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+            {% if error %}
+            <div class="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-3">
+                <span class="material-symbols-outlined text-xl">error</span>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <div class="mb-8 text-center">
+                <p class="text-slate-600 dark:text-slate-400">Hemos enviado un código a tu correo. Por favor, introdúcelo para continuar.</p>
+            </div>
+
+            <form action="{{ base_url }}admin/2fa" method="POST" class="space-y-8">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                
+                <div class="flex justify-between gap-2" id="otp-container">
+                    <input type="text" name="code" maxlength="6" required autofocus
+                        class="w-full text-center text-4xl font-black tracking-[1rem] py-6 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary transition-all outline-none" 
+                        placeholder="000000">
+                </div>
+
+                <div class="space-y-4">
+                    <button type="submit" 
+                        class="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-lg shadow-primary/25 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
+                        Verificar Código
+                        <span class="material-symbols-outlined">rocket_launch</span>
+                    </button>
+                    
+                    <a href="{{ base_url }}logout" class="block text-center text-sm font-bold text-slate-500 hover:text-primary transition-colors">Volver al inicio de sesión</a>
+                </div>
+            </form>
+        </div>
+
+        <p class="text-center mt-10 text-sm text-slate-500 dark:text-slate-500">
+            ¿No recibiste el código? <button class="text-primary font-bold hover:underline">Reenviar</button>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-20">
+    <h1 class="text-4xl font-black mb-8">{{ current_page_title }}</h1>
+    <div class="prose dark:prose-invert max-w-none">
+        <p>Estamos comprometidos con la protección de tus datos personales...</p>
+        <!-- Content goes here -->
+    </div>
+    <div class="mt-12">
+        <a href="{{ base_url }}" class="text-primary font-bold flex items-center gap-2">
+            <span class="material-symbols-outlined">arrow_back</span> Volver al Inicio
+        </a>
+    </div>
+</div>
+{% endblock %}

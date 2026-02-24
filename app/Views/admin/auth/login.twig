@@ -1,0 +1,71 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-background-light to-background-light dark:from-primary/20 dark:via-background-dark dark:to-background-dark">
+    <div class="w-full max-w-md">
+        <!-- Logo/Header -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center size-16 rounded-3xl bg-primary text-white shadow-xl shadow-primary/30 mb-6">
+                <span class="material-symbols-outlined text-4xl">bakery_dining</span>
+            </div>
+            <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Admin Momomy</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Bienvenida de nuevo, Chef</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass border border-white/20 dark:border-white/5 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 size-24 bg-primary/10 rounded-full blur-3xl"></div>
+            
+            {% if error %}
+            <div class="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-3">
+                <span class="material-symbols-outlined text-xl">error</span>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="{{ base_url }}login" method="POST" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">mail</span>
+                        <input type="email" name="email" value="{{ email }}" required
+                            class="w-full pl-12 pr-4 py-4 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary transition-all outline-none" 
+                            placeholder="admin@momomy.com">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Contraseña</label>
+                        <a href="{{ base_url }}api/recovery" class="text-xs font-bold text-primary hover:underline">¿Olvidaste tu contraseña?</a>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">lock</span>
+                        <input type="password" name="password" required
+                            class="w-full pl-12 pr-4 py-4 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary transition-all outline-none" 
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 px-1">
+                    <input type="checkbox" id="remember" class="size-5 rounded-lg border-primary/20 text-primary focus:ring-primary bg-background-light dark:bg-slate-800">
+                    <label for="remember" class="text-sm font-medium text-slate-600 dark:text-slate-400">Recordar sesión</label>
+                </div>
+
+                <button type="submit" 
+                    class="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-lg shadow-primary/25 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
+                    Entrar al Sistema
+                    <span class="material-symbols-outlined">login</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center mt-10 text-sm text-slate-500 dark:text-slate-500">
+            &copy; {{ "now"|date("Y") }} Momomy Bakery &bull; Panel de Gestión
+        </p>
+    </div>
+</div>
+{% endblock %}
