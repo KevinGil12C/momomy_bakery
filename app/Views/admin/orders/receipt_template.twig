@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nota de Venta - Momomy Bakery</title>
+    <style>
+        @page { margin: 1cm; }
+        body { font-family: 'Helvetica', sans-serif; font-size: 10px; color: #333; margin: 0; padding: 0; }
+        
+        /* Watermark */
+        #watermark {
+            position: fixed;
+            top: 25%;
+            left: 10%;
+            width: 80%;
+            height: 50%;
+            z-index: -1000;
+            opacity: 0.08;
+            text-align: center;
+        }
+        #watermark img { width: 400px; height: auto; transform: rotate(-30deg); }
+
+        .cfdi-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .cfdi-box { border: 1px solid #ddd; padding: 8px; border-radius: 5px; }
+        .cfdi-header { background: #f8f8f8; font-weight: bold; border-bottom: 1px solid #ddd; padding: 4px 8px; font-size: 9px; text-transform: uppercase; color: #f0427c; }
+        
+        .logo-area { text-align: left; vertical-align: top; }
+        .logo-text { color: #f0427c; font-size: 20px; font-weight: 900; }
+        
+        .folio-box { text-align: center; border: 2px solid #f0427c; color: #f0427c; border-radius: 8px; padding: 10px; }
+        .folio-title { font-size: 14px; font-weight: bold; }
+        .folio-number { font-size: 18px; font-weight: 900; }
+        
+        .section-title { background: #f0427c; color: white; padding: 5px 10px; font-weight: bold; border-radius: 4px; margin: 15px 0 5px 0; }
+        .label { font-weight: bold; color: #666; width: 100px; }
+        
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .items-table th { background: #eee; color: #333; padding: 8px; text-align: left; border: 1px solid #ddd; font-size: 9px; }
+        .items-table td { padding: 8px; border: 1px solid #ddd; }
+        
+        .totals-table { float: right; width: 250px; margin-top: 10px; }
+        .totals-table td { padding: 4px; text-align: right; border-bottom: 1px solid #eee; }
+        .total-row { font-weight: bold; font-size: 14px; color: #f0427c; border-bottom: 2px solid #f0427c !important; }
+    </style>
+</head>
+<body>
+    <!-- Watermark Background -->
+    <div id="watermark">
+        {% if business.logo_url %}
+            <img src="{{ business.logo_url }}">
+        {% else %}
+            <div style="font-size: 150px; font-weight: 900; color: #f0427c;">MOMOMY</div>
+        {% endif %}
+    </div>
+
+    <!-- Header / Emisor -->
+    <table class="cfdi-table">
+        <tr>
+            <td width="60%" class="logo-area">
+                {% if business.logo_url %}
+                    <img src="{{ business.logo_url }}" style="max-height: 60px; margin-bottom: 10px;">
+                {% else %}
+                    <div style="display: inline-block; width: 40px; height: 40px; background: #f0427c; border-radius: 8px; color: white; text-align: center; line-height: 40px; font-size: 20px; font-weight: 900; margin-right: 10px;">M</div>
+                    <span class="logo-text">{{ business.business_name }}</span>
+                {% endif %}
+                <div style="margin-top: 5px; color: #555; line-height: 1.4;">
+                    <strong>{{ business.business_name }}</strong><br>
+                    RFC: {{ business.tax_id|default('NOT-SET') }}<br>
+                    Ubicación: {{ business.address }}<br>
+                    Contacto: {{ business.phone }} | {{ business.email }}
+                </div>
+            </td>
+            <td width="40%" style="vertical-align: top; padding-left: 20px;">
+                <div class="folio-box">
+                    <div class="folio-title">NOTA DE VENTA</div>
+                    <div class="folio-number">FOLIO: {{ "%06d"|format(order.id) }}</div>
+                    <div style="font-size: 8px; margin-top: 5px; color: #333;">
+                        FECHA Y HORA DE EMISIÓN:<br>
+                        {{ order.created_at|date("Y-m-d H:i:s") }}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Receptor -->
+    <div class="cfdi-box" style="margin-top: 10px;">
+        <div class="cfdi-header">DATOS DEL RECEPTOR</div>
+        <table width="100%" style="margin: 5px 0;">
+            <tr>
+                <td width="50%">
+                    <span class="label">CLIENTE:</span> {{ order.customer_first_name }} {{ order.customer_last_name }}<br>
+                    <span class="label">RFC/ID:</span> Público General<br>
+                    <span class="label">EMAIL:</span> {{ order.customer_email }}
+                </td>
+                <td width="50%">
+                    <span class="label">TELÉFONO:</span> {{ order.customer_phone }}<br>
+                    <span class="label">ESTADO:</span> <strong style="color: {{ order.status == 'completed' ? '#22c55e' : '#f59e0b' }}; text-transform: uppercase;">{{ order.status|default('PENDIENTE') }}</strong><br>
+                    <span class="label">PAGO:</span> Efectivo / Transferencia<br>
+                    <span class="label">ENTREGA:</span> Sucursal / A domicilio
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th width="80" align="center">Cantidad</th>
+                <th width="100" align="right">Precio Unit.</th>
+                <th width="100" align="right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product_name }}</td>
+                <td align="center">{{ item.quantity }}</td>
+                <td align="right">${{ item.price_at_time|number_format(2) }}</td>
+                <td align="right">${{ (item.quantity * item.price_at_time)|number_format(2) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals-table">
+        <table>
+            <tr>
+                <td>SUBTOTAL:</td>
+                <td>${{ (order.total_amount / 1.16)|number_format(2) }}</td>
+            </tr>
+            <tr>
+                <td>IVA (16%):</td>
+                <td>${{ (order.total_amount - (order.total_amount / 1.16))|number_format(2) }}</td>
+            </tr>
+            <tr class="total-row">
+                <td>TOTAL:</td>
+                <td>${{ order.total_amount|number_format(2) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="clear: both; margin-top: 25px; border-top: 2px solid #000; padding-top: 15px;">
+        <table width="100%">
+            <tr>
+                <td width="70%" style="font-size: 8px; color: #111; text-align: justify; padding-right: 20px; line-height: 1.2; font-family: 'Times New Roman', Times, serif;">
+                    <div style="text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 9.5px; text-decoration: underline; text-transform: uppercase;">
+                        CONTRATO DE ADHESIÓN DE PRESTACIÓN DE SERVICIOS GASTRONÓMICOS, REPOSTERÍA ARTESANAL Y LOGÍSTICA DE REPARTO - "MOMOMY BAKERY"
+                    </div>
+
+                    <strong>DECLARACIONES PRELIMINARES:</strong>
+                    <br><strong>I. LA EMPRESA:</strong> "Momomy Bakery" (en adelante, EL PRESTADOR), es una entidad dedicada a la producción de bienes perecederos de diseño personalizado, operando bajo estándares de higiene y normatividad sanitaria vigente.
+                    <br><strong>II. EL CLIENTE:</strong> Persona física o moral que, al realizar el pago del anticipo o la liquidación del pedido, acepta de forma tácita e irrevocable los términos, condiciones y cláusulas de este contrato de adhesión, conforme a los artículos 1794 y 1796 del Código Civil Federal.
+
+                    <br><br><strong>CLÁUSULA 1. CONSENTIMIENTO, PERFECCIONAMIENTO Y ESPECIFICACIONES TÉCNICAS:</strong>
+                    <br>1.1. <strong>Objeto:</strong> El presente instrumento tiene por objeto la elaboración de un producto de repostería basado en las especificaciones proporcionadas por EL CLIENTE (diseño, sabor, tamaño y fecha).
+                    <br>1.2. <strong>Perfeccionamiento:</strong> El contrato se considera perfeccionado desde el momento en que EL PRESTADOR recibe el comprobante de pago del anticipo, obligando a ambas partes a lo aquí estipulado.
+                    <br>1.3. <strong>Conformidad Estética:</strong> Al momento de la entrega física o entrega a través de terceros, EL CLIENTE manifiesta su total conformidad con las características organolépticas y estéticas. La aceptación del producto constituye una **transacción finiquitada**, operando la renuncia expresa a cualquier acción de rescisión o reclamación por defectos estéticos visibles, errores de ortografía en letreros solicitados, o variaciones de diseño artístico.
+
+                    <br><br><strong>CLÁUSULA 2. RÉGIMEN ECONÓMICO Y PENALIZACIONES POR RESCISIÓN:</strong>
+                    <br>2.1. <strong>No Retracto:</strong> Con fundamento en el Art. 56 de la Ley Federal de Protección al Consumidor, EL CLIENTE reconoce que, por la naturaleza de "bien personalizado y perecedero", el derecho de retracto no es aplicable una vez que EL PRESTADOR ha iniciado la gestión de compra de insumos o la reserva de la fecha en su calendario de producción.
+                    <br>2.2. <strong>Escalafón de Cancelación:</strong> 
+                    (a) Cancelación con más de 120 horas (5 días) de antelación: Se reintegrará el 50% del anticipo, quedando el restante a favor del PRESTADOR por concepto de gastos administrativos. 
+                    (b) Cancelación con menos de 72 horas: EL CLIENTE reconoce que el anticipo se pierde en su totalidad como **Pena Convencional** (Art. 1840 del Código Civil), debido a la pérdida de insumos y el costo de oportunidad por haber rechazado otros pedidos para esa fecha.
+                    <br>2.3. <strong>Abandono de Mercancía:</strong> EL PRESTADOR únicamente garantiza la integridad y cadena de frío del producto por un periodo de 12 horas posteriores a la hora pactada. Transcurrido dicho tiempo sin que EL CLIENTE recoja el producto, se procederá a su desecho sanitario por seguridad alimentaria, sin derecho a reembolso, compensación o crédito para futuros pedidos.
+
+                    <br><br><strong>CLÁUSULA 3. VARIACIONES ARTESANALES Y PROPIEDAD INTELECTUAL:</strong>
+                    <br>3.1. <strong>Tolerancia Cromática:</strong> EL CLIENTE acepta una variación de hasta el 15% en las tonalidades finales. Los pigmentos comestibles reaccionan de forma distinta según el pH de los ingredientes (fondant, crema, ganache) y nunca igualarán la luz emitida por pantallas digitales (RGB/CMYK).
+                    <br>3.2. <strong>Derechos de Autor:</strong> Los diseños creados por Momomy Bakery son propiedad intelectual de la empresa. EL PRESTADOR se reserva el derecho de utilizar material audiovisual del producto terminado para su exhibición comercial en portafolios, redes sociales y publicidad, salvo pacto en contrario debidamente formalizado por escrito.
+
+                    <br><br><strong>CLÁUSULA 4. SEGURIDAD ALIMENTARIA, RIESGOS Y TRASLADO DE RESPONSABILIDAD:</strong>
+                    <br>4.1. <strong>Cadena de Frío y Conservación:</strong> El riesgo de deterioro se traslada íntegramente al CLIENTE en el instante de la entrega. Es responsabilidad del CLIENTE mantener el producto en un rango de temperatura de 2°C a 6°C. EL PRESTADOR no será responsable por colapsos estructurales derivados de la exposición a temperaturas superiores a los 22°C o exposición directa a rayos UV.
+                    <br>4.2. <strong>Transporte y Estabilidad:</strong> Si EL CLIENTE opta por transportar el producto por sus propios medios o mediante servicios de terceros (plataformas de reparto), EL PRESTADOR queda exento de toda responsabilidad por daños mecánicos, vibraciones excesivas, o falta de nivelación en el vehículo que afecten la estética o estabilidad del bien.
+                    <br>4.3. <strong>Elementos No Comestibles:</strong> El producto puede contener soportes internos (palillos, pilares, alambres de floristería) necesarios para la estabilidad. Es deber del CLIENTE retirar dichos elementos antes del consumo. EL PRESTADOR no se hace responsable por incidentes derivados de la ingesta negligente de estos componentes estructurales.
+
+                    <br><br><strong>CLÁUSULA 5. DECLARACIÓN JURADA SOBRE ALÉRGENOS:</strong>
+                    <br>5.1. <strong>Aviso de Salud Pública:</strong> EL PRESTADOR informa que su cocina no es una zona libre de trazas. Se manipulan ingredientes altamente alergénicos: <u>Gluten, Lactosa, Huevo, Soya, Maní, Nueces de Árbol y derivados.</u> 
+                    <br>5.2. <strong>Eximente de Responsabilidad Sanitaria:</strong> EL CLIENTE asume la obligación de informar a los comensales finales sobre estos riesgos. Al recibir el producto, EL CLIENTE deslinda a "Momomy Bakery" de cualquier responsabilidad civil, penal o sanitaria derivada de reacciones alérgicas o complicaciones médicas de cualquier índole.
+
+                    <br><br><strong>CLÁUSULA 6. GESTIÓN DE RECLAMACIONES Y JURISDICCIÓN:</strong>
+                    <br>6.1. <strong>Protocolo de Queja:</strong> Reclamaciones por "Vicios Ocultos" (sabor o estado interno) deberán enviarse por escrito en un plazo máximo de 6 horas post-entrega. Como condición <i>sine qua non</i> para el análisis de la queja, EL CLIENTE deberá poner a disposición del PRESTADOR al menos el 80% del producto original para dictamen técnico. La ausencia del producto imposibilita cualquier reembolso.
+                    <br>6.2. <strong>Límite Pecuniario:</strong> La responsabilidad total del PRESTADOR por cualquier concepto se limita estrictamente al monto efectivamente pagado por el pedido. En ningún caso se cubrirán daños indirectos, incidentales, consecuentes o morales.
+                    <br>6.3. <strong>Competencia:</strong> Para la interpretación y cumplimiento de este contrato, las partes se someten a la jurisdicción de los tribunales de la Ciudad de Toluca, Estado de México, renunciando a cualquier otro fuero que pudiere corresponderles por domicilio presente o futuro.
+                </td>
+                <td width="25%" align="right" style="vertical-align: top; border-left: 1px solid #ddd; padding-left: 10px;">
+                    <div style="font-weight: bold; font-size: 8px; color: #f0427c; margin-bottom: 5px; text-align: center;">EXPEDIENTE TÉCNICO</div>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ tracking_url|url_encode }}" style="width: 100px; height: 100px; border: 1px solid #ccc; padding: 2px;">
+                    <div style="font-size: 7px; color: #555; margin-top: 5px; text-align: center;">Firma Digital de Orden:<br><strong>{{ order.id }}-{{ order.created_at|date("U") }}-MB</strong></div>
+                    <div style="margin-top: 10px; border: 1px solid #ddd; padding: 5px; font-size: 5px; text-align: left; color: #999;">
+                        CERTIFICACIÓN DE CALIDAD:<br>
+                        Este documento valida que el producto salió de nuestras instalaciones cumpliendo los estándares de inocuidad vigentes.
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        Gracias por su compra. ¡Vuelva pronto!<br>
+        Esta es una representación impresa de un comprobante de venta.
+    </div>
+</body>
+</html>

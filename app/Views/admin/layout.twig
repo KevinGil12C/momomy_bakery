@@ -32,9 +32,65 @@
         body { font-family: "Plus Jakarta Sans", sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
         .dark .glass { background: rgba(37, 18, 24, 0.7); backdrop-filter: blur(10px); }
+        
+        /* CustomScrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(240, 66, 124, 0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(240, 66, 124, 0.5); }
+
+        /* Sidebar transition */
+        .sidebar-expanded { width: 288px; }
+        .sidebar-collapsed { width: 88px; }
+        .sidebar-transition { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
+    <script>
+        // Dark Mode Logic
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        // Sidebar state
+        function toggleSidebar() {
+            const sidebar = document.getElementById('main-sidebar');
+            const labels = document.querySelectorAll('.sidebar-label');
+            const logoText = document.getElementById('logo-text');
+            const profileBox = document.getElementById('sidebar-profile');
+
+            if (sidebar.classList.contains('sidebar-expanded')) {
+                sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                labels.forEach(l => l.classList.add('hidden'));
+                if(logoText) logoText.classList.add('hidden');
+                localStorage.setItem('sidebarStatus', 'collapsed');
+            } else {
+                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                labels.forEach(l => l.classList.remove('hidden'));
+                if(logoText) logoText.classList.remove('hidden');
+                localStorage.setItem('sidebarStatus', 'expanded');
+            }
+        }
+
+        window.onload = () => {
+            if (localStorage.getItem('sidebarStatus') === 'collapsed') {
+                toggleSidebar();
+            }
+        }
+    </script>
 </head>
-<body class="h-full bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-300">
+<body class="h-full bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-200">
     {% block body %}{% endblock %}
+    {% block scripts %}{% endblock %}
 </body>
 </html>

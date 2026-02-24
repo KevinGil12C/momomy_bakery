@@ -1,0 +1,77 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    {% include 'admin/partials/sidebar.twig' with {'active': 'contacts'} %}
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header -->
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [{label: 'Mensajes', url: 'admin/contacts'}]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="mb-8">
+                <h2 class="text-3xl font-black text-slate-900 dark:text-white">Mensajes de Contacto</h2>
+                <p class="text-slate-500 text-sm font-medium">Buzón de consultas recibidas desde la landing page</p>
+            </div>
+
+            <!-- Messages Table -->
+            <div class="glass rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Remitente</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Mensaje</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Fecha</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                        {% for contact in contacts %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors {{ not contact.is_read ? 'bg-primary/[0.03] dark:bg-primary/[0.05]' : '' }}">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="size-10 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
+                                        {{ contact.name|first|upper }}
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-900 dark:text-white">{{ contact.name }}</p>
+                                        <p class="text-xs text-slate-500">{{ contact.email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 max-w-md">
+                                <p class="text-sm line-clamp-2 {{ not contact.is_read ? 'font-bold' : '' }}">{{ contact.message }}</p>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-slate-500">
+                                {{ contact.created_at|date("d/m/Y H:i") }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    {% if not contact.is_read %}
+                                    <a href="{{ base_url }}admin/contacts/read/{{ contact.id }}" class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all" title="Marcar como leído">
+                                        <span class="material-symbols-outlined text-sm">mark_email_read</span>
+                                    </a>
+                                    {% endif %}
+                                    <a href="{{ base_url }}admin/contacts/delete/{{ contact.id }}" 
+                                       onclick="return confirm('¿Eliminar mensaje de forma permanente?')"
+                                       class="size-9 rounded-xl hover:bg-red-500/10 hover:text-red-500 text-slate-400 transition-colors flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-20 text-center text-slate-400 font-medium">
+                                No has recibido mensajes aún.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

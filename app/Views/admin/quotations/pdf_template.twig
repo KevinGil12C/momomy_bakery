@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotización - Momomy Bakery</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; line-height: 1.6; }
+        .header { text-align: center; border-bottom: 2px solid #f0427c; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { color: #f0427c; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+        .bakery-info { font-size: 12px; color: #777; }
+        .content { margin-bottom: 40px; }
+        .customer-info { margin-bottom: 30px; background: #fdf2f5; padding: 15px; border-radius: 10px; }
+        .customer-info h3 { margin-top: 0; color: #f0427c; font-size: 16px; }
+        .details h2 { font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .details p { white-space: pre-wrap; font-size: 14px; }
+        .footer { text-align: center; font-size: 11px; color: #aaa; border-top: 1px solid #eee; padding-top: 20px; position: fixed; bottom: 0; width: 100%; }
+        .date { text-align: right; font-size: 12px; color: #777; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <table width="100%" class="header">
+        <tr>
+            <td width="50%" align="left">
+                {% if business.logo_url %}
+                    <img src="{{ business.logo_url }}" style="max-height: 80px;">
+                {% else %}
+                    <div class="logo">{{ business.business_name|default('Momomy Bakery') }}</div>
+                {% endif %}
+            </td>
+            <td width="50%" align="right" class="bakery-info">
+                {{ business.address }}<br>
+                {{ business.phone }}<br>
+                {{ business.email }}
+            </td>
+        </tr>
+    </table>
+
+    <div class="date">Fecha: {{ "now"|date("d/m/Y") }}</div>
+
+    <div class="customer-info">
+        <h3>Cotización para:</h3>
+        <p><strong>Nombre:</strong> {{ customer_first_name }} {{ customer_last_name }}<br>
+        <strong>Email:</strong> {{ customer_email }}</p>
+    </div>
+
+    <div class="content">
+        <div class="details">
+            <h2>{{ subject }}</h2>
+            <p>{{ content }}</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        Este documento es una cotización informativa y no representa una nota de venta final.<br>
+        &copy; {{ "now"|date("Y") }} Momomy Bakery. Todos los derechos reservados.
+    </div>
+</body>
+</html>

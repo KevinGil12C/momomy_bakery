@@ -1,0 +1,90 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    {% include 'admin/partials/sidebar.twig' with {'active': 'orders'} %}
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header -->
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [{label: 'Pedidos', url: 'admin/orders'}]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-900 dark:text-white">Pedidos y Ventas</h2>
+                    <p class="text-slate-500 text-sm font-medium">Gestiona las órdenes que llegan de Vercel</p>
+                </div>
+                <a href="{{ base_url }}admin/orders/create" class="bg-primary text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-105 transition-all">
+                    <span class="material-symbols-outlined text-lg">add_shopping_cart</span> Nuevo Pedido
+                </a>
+            </div>
+            <!-- Table List -->
+            <div class="glass rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Folio</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Cliente</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Total</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Estado</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                        {% for order in orders %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                            <td class="px-6 py-4 font-bold">#{{ "%06d"|format(order.id) }}</td>
+                            <td class="px-6 py-4">
+                                <p class="font-bold text-slate-900 dark:text-white">{{ order.customer_first_name }} {{ order.customer_last_name }}</p>
+                                <p class="text-xs text-slate-500">{{ order.customer_email }}</p>
+                            </td>
+                            <td class="px-6 py-4 font-black text-primary">${{ order.total_amount }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 
+                                    {% if order.status == 'pending' %}bg-orange-500/10 text-orange-500
+                                    {% elseif order.status == 'processing' %}bg-blue-500/10 text-blue-500
+                                    {% elseif order.status == 'completed' %}bg-green-500/10 text-green-500
+                                    {% elseif order.status == 'cancelled' %}bg-red-500/10 text-red-500
+                                    {% else %}bg-slate-500/10 text-slate-500{% endif %} 
+                                    text-[10px] font-black uppercase rounded-full">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ base_url }}admin/orders/edit/{{ order.id }}" 
+                                       class="size-9 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-all shadow-sm">
+                                        <span class="material-symbols-outlined text-sm">edit</span>
+                                    </a>
+                                    <a href="{{ base_url }}admin/orders/receipt/{{ order.id }}" target="_blank"
+                                       class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-black transition-all flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm">receipt_long</span> Nota de Venta
+                                    </a>
+                                    <a href="{{ base_url }}admin/orders/delete/{{ order.id }}" 
+                                       onclick="return confirm('¿Eliminar pedido de forma permanente?')"
+                                       class="size-9 rounded-xl hover:bg-red-500/10 hover:text-red-500 text-slate-400 transition-colors flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-20 text-center">
+                                <div class="inline-flex size-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mb-4">
+                                    <span class="material-symbols-outlined text-3xl">shopping_cart</span>
+                                </div>
+                                <h3 class="text-lg font-bold">No hay pedidos registrados</h3>
+                                <p class="text-sm text-slate-500">Los pedidos que lleguen de la web aparecerán aquí.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

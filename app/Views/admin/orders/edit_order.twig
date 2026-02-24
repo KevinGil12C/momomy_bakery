@@ -1,0 +1,246 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    {% include 'admin/partials/sidebar.twig' with {'active': 'orders'} %}
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header -->
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [
+            {label: 'Pedidos', url: 'admin/orders'},
+            {label: (order ? 'Editar' : 'Nuevo'), url: '#'}
+        ]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="mb-8">
+                <h2 class="text-3xl font-black text-slate-900 dark:text-white">{% if order %}Editar{% else %}Nuevo{% endif %} Pedido</h2>
+                <p class="text-slate-500 text-sm font-medium">Gestión de detalles y estado de la orden</p>
+            </div>
+
+            <form action="{{ base_url }}admin/orders/{% if order %}update/{{ order.id }}{% else %}store{% endif %}" method="POST" class="max-w-4xl space-y-8">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Customer Info -->
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl space-y-6">
+                        <h4 class="text-lg font-bold flex items-center gap-2 text-primary">
+                            <span class="material-symbols-outlined">person</span> Datos del Cliente
+                        </h4>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Nombre</label>
+                                <input type="text" name="customer_first_name" value="{{ order.customer_first_name }}" required
+                                    class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all"
+                                    placeholder="Nombre">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Apellido</label>
+                                <input type="text" name="customer_last_name" value="{{ order.customer_last_name }}" required
+                                    class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all"
+                                    placeholder="Apellido">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Correo Electrónico</label>
+                            <input type="email" name="customer_email" value="{{ order.customer_email }}" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all"
+                                placeholder="email@ejemplo.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Teléfono</label>
+                            <input type="text" name="customer_phone" value="{{ order.customer_phone }}" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all"
+                                placeholder="55 1234 5678">
+                        </div>
+                    </div>
+
+                    <!-- Order Status -->
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl space-y-6">
+                        <h4 class="text-lg font-bold flex items-center gap-2 text-primary">
+                            <span class="material-symbols-outlined">info</span> Estado del Pedido
+                        </h4>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Estado Actual</label>
+                            <div class="relative">
+                                <select name="status" required
+                                    class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm appearance-none">
+                                    <option value="pending" {{ order.status == 'pending' ? 'selected' : '' }}>Pendiente</option>
+                                    <option value="processing" {{ order.status == 'processing' ? 'selected' : '' }}>En Proceso</option>
+                                    <option value="completed" {{ order.status == 'completed' ? 'selected' : '' }}>Completado</option>
+                                    <option value="cancelled" {{ order.status == 'cancelled' ? 'selected' : '' }}>Cancelado</option>
+                                </select>
+                                <span class="material-symbols-outlined absolute right-4 top-3 text-slate-400 pointer-events-none">unfold_more</span>
+                            </div>
+                        </div>
+
+                        {% if order %}
+                        <div class="p-6 bg-slate-50 dark:bg-white/5 rounded-[2rem] border border-slate-100 dark:border-white/5">
+                            <h5 class="font-bold text-sm mb-4">Resumen de Importe</h5>
+                            <div class="flex justify-between mb-2 text-sm">
+                                <span class="text-slate-500">Monto Total:</span>
+                                <span class="font-black text-primary text-xl">${{ order.total_amount }}</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-4">
+                                Folio de seguimiento: #{{ "%06d"|format(order.id) }}<br>
+                                Fecha: {{ order.created_at|date("d/m/Y H:i") }}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Monto Total</label>
+                            <input type="number" name="total_amount" step="0.01" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all"
+                                placeholder="0.00">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-primary text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:scale-[1.02] transition-transform">
+                        <span class="material-symbols-outlined">save</span> {% if order %}Guardar Cambios{% else %}Crear Pedido{% endif %}
+                    </button>
+                    <a href="{{ base_url }}admin/orders" class="flex-1 bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 py-4 rounded-2xl font-bold flex items-center justify-center hover:bg-slate-300 transition-all">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+
+            {% if not order %}
+            <div class="mt-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">add_box</span> Productos del Pedido
+                </h3>
+                <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl">
+                    <div id="product-list" class="space-y-4 mb-6">
+                        <!-- Product rows will appear here -->
+                    </div>
+                    
+                    <div class="flex gap-4 items-end bg-slate-50 dark:bg-white/5 p-6 rounded-3xl border border-slate-100 dark:border-white/10">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-slate-500 mb-2 px-1">Seleccionar Postre</label>
+                            <select id="product-picker" class="w-full px-4 py-3 rounded-xl border-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm h-[48px]">
+                                <option value="">Selecciona un producto...</option>
+                                {% for product in products %}
+                                <option value="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.price }}">{{ product.name }} - ${{ product.price }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="w-24">
+                            <label class="block text-xs font-bold text-slate-500 mb-2 px-1">Cant.</label>
+                            <input type="number" id="product-qty" value="1" min="1" class="w-full px-4 py-3 rounded-xl border-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm h-[48px]">
+                        </div>
+                        <button type="button" onclick="addProductRow()" class="h-[48px] px-6 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">add</span> Agregar
+                        </button>
+                    </div>
+
+                    <div class="mt-8 pt-8 border-t border-slate-100 dark:border-white/10 flex justify-end">
+                        <div class="text-right">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total del Pedido</p>
+                            <p class="text-4xl font-black text-primary" id="display-total">$0.00</p>
+                            <input type="hidden" name="total_amount" id="form-total" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if order and items %}
+            <div class="mt-12">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">list_alt</span> Productos en el Pedido
+                </h3>
+                <div class="glass rounded-[2rem] border border-white/20 shadow-xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Producto</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Cantidad</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Precio Unitario</th>
+                                <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                            {% for item in items %}
+                            <tr>
+                                <td class="px-6 py-4 font-bold">{{ item.product_name }}</td>
+                                <td class="px-6 py-4">{{ item.quantity }}</td>
+                                <td class="px-6 py-4">${{ item.price }}</td>
+                                <td class="px-6 py-4 text-right font-black">${{ (item.price * item.quantity)|number_format(2) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% block scripts %}
+<script>
+    let products = [];
+    let rowId = 0;
+
+    function addProductRow() {
+        const picker = document.getElementById('product-picker');
+        const qtyInput = document.getElementById('product-qty');
+        const selected = picker.options[picker.selectedIndex];
+        
+        if (!selected.value) return;
+
+        const id = selected.value;
+        const name = selected.dataset.name;
+        const price = parseFloat(selected.dataset.price);
+        const qty = parseInt(qtyInput.value);
+        const subtotal = price * qty;
+        const currentId = rowId++;
+
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-4 p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm animate-in fade-in slide-in-from-left-4';
+        div.id = `row-${currentId}`;
+        div.innerHTML = `
+            <div class="flex-grow">
+                <p class="font-bold text-slate-900 dark:text-white">${name}</p>
+                <p class="text-xs text-slate-500">${qty} unidad(es) x $${price.toFixed(2)}</p>
+                <input type="hidden" name="products[${currentId}][id]" value="${id}">
+                <input type="hidden" name="products[${currentId}][quantity]" value="${qty}">
+                <input type="hidden" name="products[${currentId}][price]" value="${price}">
+            </div>
+            <div class="text-right">
+                <p class="font-black text-slate-900 dark:text-white">$${subtotal.toFixed(2)}</p>
+            </div>
+            <button type="button" onclick="removeRow(${currentId}, ${subtotal})" class="size-10 rounded-xl hover:bg-red-500/10 hover:text-red-500 text-slate-400 transition-colors flex items-center justify-center">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
+        `;
+
+        document.getElementById('product-list').appendChild(div);
+        
+        updateTotal(subtotal);
+        
+        // Reset inputs
+        picker.selectedIndex = 0;
+        qtyInput.value = 1;
+    }
+
+    function removeRow(id, amount) {
+        document.getElementById(`row-${id}`).remove();
+        updateTotal(-amount);
+    }
+
+    let currentTotal = 0;
+    function updateTotal(amount) {
+        currentTotal += amount;
+        document.getElementById('display-total').innerText = `$${currentTotal.toFixed(2)}`;
+        document.getElementById('form-total').value = currentTotal.toFixed(2);
+    }
+</script>
+{% endblock %}

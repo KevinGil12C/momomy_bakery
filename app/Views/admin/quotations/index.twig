@@ -1,0 +1,99 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    {% include 'admin/partials/sidebar.twig' with {'active': 'quotations'} %}
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header -->
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [{label: 'Cotizaciones', url: 'admin/quotations'}]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                   <h2 class="text-3xl font-black text-slate-900 dark:text-white">Cotizaciones</h2>
+                   <p class="text-slate-500 text-sm font-medium">Presupuestos enviados a clientes</p>
+                </div>
+                <a href="{{ base_url }}admin/quotations/create" class="bg-primary text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined text-lg">add</span> Nueva Cotización
+                </a>
+            </div>
+            <!-- Table List -->
+            <div class="glass rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Cliente</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Asunto</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Fecha Enviada</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500">Estado</th>
+                            <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                        {% for quotation in quotations %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                            <td class="px-6 py-4">
+                                <p class="font-bold text-slate-900 dark:text-white">{{ quotation.customer_first_name }} {{ quotation.customer_last_name }}</p>
+                                <p class="text-xs text-slate-500">{{ quotation.customer_email }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-sm truncate max-w-xs">{{ quotation.subject }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-sm">{{ quotation.sent_at|date("d/m/Y H:i") }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 
+                                    {% if quotation.status == 'draft' %}bg-orange-500/10 text-orange-500
+                                    {% elseif quotation.status == 'sent' %}bg-blue-500/10 text-blue-500
+                                    {% elseif quotation.status == 'accepted' %}bg-green-500/10 text-green-500
+                                    {% elseif quotation.status == 'rejected' %}bg-red-500/10 text-red-500
+                                    {% else %}bg-slate-500/10 text-slate-500{% endif %} 
+                                    text-[10px] font-black uppercase rounded-full">
+                                    {{ quotation.status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    {% if quotation.status == 'draft' %}
+                                    <a href="{{ base_url }}admin/quotations/edit/{{ quotation.id }}" 
+                                       class="size-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all shadow-sm"
+                                       title="Completar y enviar">
+                                        <span class="material-symbols-outlined text-xl">send_and_archive</span>
+                                    </a>
+                                    {% endif %}
+                                    {% if quotation.pdf_path %}
+                                    <a href="{{ base_url }}admin/quotations/download/{{ quotation.pdf_path }}" target="_blank"
+                                       class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                                        <span class="material-symbols-outlined text-xl">picture_as_pdf</span>
+                                    </a>
+                                    {% endif %}
+                                    <a href="{{ base_url }}admin/quotations/delete/{{ quotation.id }}" 
+                                       onclick="return confirm('¿Eliminar esta cotización de la base de datos?')"
+                                       class="size-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                        <span class="material-symbols-outlined text-xl">delete</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-20 text-center">
+                                <div class="inline-flex size-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mb-4">
+                                    <span class="material-symbols-outlined text-3xl">description</span>
+                                </div>
+                                <h3 class="text-lg font-bold">Sin cotizaciones</h3>
+                                <p class="text-sm text-slate-500">Las cotizaciones que generes aparecerán aquí.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -27,7 +27,7 @@ class EmailService
     /**
      * Send email using PHPMailer
      */
-    public function send($to, $subject, $body, $altBody = '')
+    public function send($to, $subject, $body, $attachment = null, $altBody = '')
     {
         if (class_exists(PHPMailer::class)) {
             $mail = new PHPMailer(true);
@@ -46,6 +46,11 @@ class EmailService
                 $mail->setFrom($this->user, Config::FROM_NAME);
                 $mail->addAddress($to);
 
+                // Attachment
+                if ($attachment && file_exists($attachment)) {
+                    $mail->addAttachment($attachment);
+                }
+
                 // Content
                 $mail->isHTML(true);
                 $mail->Subject = $subject;
@@ -59,7 +64,7 @@ class EmailService
                 return false;
             }
         } else {
-            // Fallback to mail() if PHPMailer is missing
+            // Fallback to mail() if PHPMailer is missing (attachments not supported in this basic fallback)
             $headers = "MIME-Version: 1.0" . "\r\n";
             $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
             $headers .= 'From: ' . Config::FROM_NAME . ' <' . $this->user . '>' . "\r\n";

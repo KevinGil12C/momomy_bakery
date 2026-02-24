@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{{ title }} - Momomy Bakery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <style>
+        body { font-family: "Plus Jakarta Sans", sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); }
+        .gradient-text { background: linear-gradient(90deg, #f0427c, #ff7eb3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="h-full bg-[#fdf2f5] flex items-center justify-center p-4">
+    <div class="max-w-md w-full glass rounded-[3rem] border border-white/40 shadow-2xl p-8 space-y-8">
+        <div class="text-center">
+            <div class="size-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-4xl text-[#f0427c]">cake</span>
+            </div>
+            <h1 class="text-2xl font-black text-slate-900">¡Hola, {{ order.customer_first_name }}!</h1>
+            <p class="text-slate-500 font-medium">Aquí puedes ver el estado de tu pedido #{{ "%06d"|format(order.id) }}</p>
+        </div>
+
+        <!-- Status Progress -->
+        <div class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="size-10 rounded-full {% if order.status != 'cancelled' %}bg-green-500 text-white{% else %}bg-slate-200 text-slate-400{% endif %} flex items-center justify-center">
+                    <span class="material-symbols-outlined">check</span>
+                </div>
+                <div>
+                    <p class="font-bold text-slate-900">Pedido Recibido</p>
+                    <p class="text-xs text-slate-500">{{ order.created_at|date("d M, H:i") }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 relative">
+                <div class="absolute left-5 -top-6 w-0.5 h-6 bg-slate-200"></div>
+                <div class="size-10 rounded-full {% if order.status == 'completed' %}bg-green-500 text-white{% elseif order.status == 'pending' %}bg-orange-500 text-white animate-pulse{% else %}bg-slate-200 text-slate-400{% endif %} flex items-center justify-center">
+                    <span class="material-symbols-outlined">{% if order.status == 'completed' %}check{% else %}oven_gen{% endif %}</span>
+                </div>
+                <div>
+                    <p class="font-bold text-slate-900">En Preparación</p>
+                    <p class="text-xs text-slate-500">Estamos horneando tu pedido con amor.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 relative">
+                <div class="absolute left-5 -top-6 w-0.5 h-6 bg-slate-200"></div>
+                <div class="size-10 rounded-full {% if order.status == 'completed' %}bg-green-500 text-white{% else %}bg-slate-200 text-slate-400{% endif %} flex items-center justify-center">
+                    <span class="material-symbols-outlined">delivery_dining</span>
+                </div>
+                <div>
+                    <p class="font-bold text-slate-900 tracking-tight">Listo para Entrega</p>
+                    <p class="text-xs text-slate-500">{% if order.status == 'completed' %}¡Tu pedido ya fue entregado!{% else %}Te avisaremos cuando esté listo.{% endif %}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-6">
+            <h4 class="font-bold text-sm mb-4">Resumen de Pedido</h4>
+            <div class="space-y-3">
+                {% for item in items %}
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-600">{{ item.quantity }}x {{ item.product_name }}</span>
+                    <span class="font-bold text-slate-900">${{ (item.quantity * item.price_at_time)|number_format(2) }}</span>
+                </div>
+                {% endfor %}
+                <div class="flex justify-between pt-3 border-t border-slate-50 text-base font-black text-[#f0427c]">
+                    <span>Total</span>
+                    <span>${{ order.total_amount|number_format(2) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-primary/5 p-4 rounded-2xl text-center space-y-1">
+            <p class="text-[10px] font-bold text-primary uppercase tracking-widest">¿Tienes dudas?</p>
+            <p class="text-sm font-medium text-slate-700 font-bold tracking-tight">Llámanos al: {{ business.phone|default('555-MOMOMY') }}</p>
+        </div>
+    </div>
+</body>
+</html>

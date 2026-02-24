@@ -56,14 +56,15 @@ class AuthController extends Controller
                 $emailService->send(
                     $user->email,
                     "Código de Seguridad - Momomy Bakery",
-                    "Hola {$user->name}, tu código de acceso al sistema es: <b>$code</b>. Este código expira en 10 minutos."
+                    "Hola {$user->first_name}, tu código de acceso al sistema es: <b>$code</b>. Este código expira en 10 minutos."
                 );
 
                 $this->redirect('admin/2fa');
             } else {
                 $_SESSION['user_id'] = $user->id;
                 $_SESSION['user_role'] = $user->role;
-                $_SESSION['user_name'] = $user->name;
+                $_SESSION['user_name'] = $user->first_name . ' ' . $user->last_name;
+                $_SESSION['user_avatar'] = $user->avatar_url;
                 $this->redirect('admin/dashboard');
             }
         } else {
@@ -102,7 +103,8 @@ class AuthController extends Controller
 
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_role'] = $user->role;
-            $_SESSION['user_name'] = $user->name;
+            $_SESSION['user_name'] = $user->first_name . ' ' . $user->last_name;
+            $_SESSION['user_avatar'] = $user->avatar_url;
             unset($_SESSION['pending_2fa_user']);
 
             $this->redirect('admin/dashboard');

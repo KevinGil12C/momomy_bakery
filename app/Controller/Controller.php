@@ -54,17 +54,26 @@ class Controller
         $this->twig->addGlobal('base_url', $this->baseUrl);
         $this->twig->addGlobal('session', $_SESSION);
         $this->twig->addGlobal('current_year', date('Y'));
+        $this->twig->addGlobal('config', new \App\config\Config());
     }
 
     /**
-     * Renders a Twig template
+     * Renders a Twig template and returns the HTML string
+     */
+    public function renderTemplate($view, $data = [])
+    {
+        return $this->twig->render($view, $data);
+    }
+
+    /**
+     * Renders a Twig template and echoes it
      * @param string $view Template path relative to app/Views
      * @param array $data Data to pass to the template
      */
     public function showView($view, $data = [])
     {
         try {
-            echo $this->twig->render($view, $data);
+            echo $this->renderTemplate($view, $data);
         } catch (\Exception $e) {
             echo "Error rendering view: " . $e->getMessage();
         }

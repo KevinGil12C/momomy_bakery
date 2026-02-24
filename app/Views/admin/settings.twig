@@ -1,0 +1,107 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    {% include 'admin/partials/sidebar.twig' with {'active': 'settings'} %}
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header -->
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [{label: 'Configuración', url: '#'}]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="mb-8">
+                <h2 class="text-3xl font-black text-slate-900 dark:text-white">Configuración del Negocio</h2>
+                <p class="text-slate-500 text-sm font-medium">Esta información aparecerá en tus PDFs y correos automáticos</p>
+            </div>
+
+            <form action="{{ base_url }}admin/settings/update" method="POST" enctype="multipart/form-data" class="max-w-4xl space-y-8">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Basic Info -->
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl space-y-6">
+                        <h4 class="text-lg font-bold flex items-center gap-2 text-primary">
+                            <span class="material-symbols-outlined">store</span> Datos Generales
+                        </h4>
+                        
+                        <div class="flex items-center gap-6 mb-4">
+                            <div id="logo-preview" class="size-24 rounded-2xl bg-white dark:bg-slate-800/50 border-2 border-primary/20 flex items-center justify-center text-primary overflow-hidden shadow-inner">
+                                {% if business.logo_url %}
+                                    <img src="{{ business.logo_url }}" class="w-full h-full object-contain p-2">
+                                {% else %}
+                                    <span class="material-symbols-outlined text-4xl text-slate-300">image</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-1">Logo del Negocio</label>
+                                <input type="file" name="logo" accept="image/*" onchange="previewLogo(this)"
+                                    class="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Nombre del Negocio</label>
+                            <input type="text" name="business_name" value="{{ business.business_name }}" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Email Público</label>
+                            <input type="email" name="email" value="{{ business.email }}" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Teléfono de Contacto</label>
+                            <input type="text" name="phone" value="{{ business.phone }}" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Tax & Address -->
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl space-y-6">
+                        <h4 class="text-lg font-bold flex items-center gap-2 text-primary">
+                            <span class="material-symbols-outlined">location_on</span> Ubicación y Fiscal
+                        </h4>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Dirección Física</label>
+                            <textarea name="address" rows="3" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all">{{ business.address }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">ID Fiscal / RFC (Opcional)</label>
+                            <input type="text" name="tax_id" value="{{ business.tax_id }}"
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all"
+                                placeholder="Ej: MOMO123456ABC">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-primary text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-primary/30 hover:scale-[1.02] transition-transform">
+                        <span class="material-symbols-outlined">save</span> Actualizar Información
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function previewLogo(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('logo-preview');
+                preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-contain p-2">`;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+<aside id="main-sidebar" class="hidden lg:flex flex-col h-full glass border-r border-white/10 p-6 z-20 sidebar-expanded sidebar-transition overflow-hidden">
+    <div class="flex items-center gap-4 mb-12 px-2">
+        <div onclick="toggleSidebar()" class="size-10 min-w-[40px] rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 cursor-pointer hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined">bakery_dining</span>
+        </div>
+        <span id="logo-text" class="text-xl font-black text-slate-900 dark:text-white truncate">Momomy</span>
+    </div>
+
+    <nav class="flex-grow space-y-2">
+        <a href="{{ base_url }}admin/dashboard" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'dashboard' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">dashboard</span> 
+            <span class="sidebar-label truncate">Dashboard</span>
+        </a>
+        <a href="{{ base_url }}admin/inventory" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'inventory' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">inventory_2</span> 
+            <span class="sidebar-label truncate">Inventario</span>
+        </a>
+        <a href="{{ base_url }}admin/orders" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'orders' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">shopping_cart</span> 
+            <span class="sidebar-label truncate">Pedidos</span>
+        </a>
+        <a href="{{ base_url }}admin/quotations" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'quotations' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">description</span> 
+            <span class="sidebar-label truncate">Cotizaciones</span>
+        </a>
+        <a href="{{ base_url }}admin/contacts" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'contacts' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">chat_bubble</span> 
+            <span class="sidebar-label truncate">Mensajes</span>
+            {% if stats.unread_messages > 0 %}
+                <span class="size-2 bg-primary rounded-full ml-auto group-hover:bg-white transition-colors {{ active == 'contacts' ? 'bg-white' : '' }}"></span>
+            {% endif %}
+        </a>
+        <a href="{{ base_url }}admin/users" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'users' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">group</span> 
+            <span class="sidebar-label truncate">Usuarios</span>
+        </a>
+        <a href="{{ base_url }}admin/backups" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'backups' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">database</span> 
+            <span class="sidebar-label truncate">Respaldos</span>
+        </a>
+        <a href="{{ base_url }}admin/settings" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'settings' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">settings</span> 
+            <span class="sidebar-label truncate">Configuración</span>
+        </a>
+    </nav>
+</aside>

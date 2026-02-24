@@ -69,18 +69,30 @@ class Database
         return $this->stmt->execute();
     }
 
-    // Obtener el conjunto de resultados como un array de objetos
+    /**
+     * Execute a raw SQL query and return results
+     */
+    public function rawQuery($sql, $params = [])
+    {
+        $this->query($sql);
+        foreach ($params as $key => $value) {
+            $this->bind($key, $value);
+        }
+        return $this->resultSet();
+    }
+
+    // Obtener el conjunto de resultados como un array
     public function resultSet()
     {
         $this->execute();
-        return $this->stmt->fetchAll(PDO::FETCH_OBJ);
+        return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Obtener un solo registro como objeto
+    // Obtener un solo registro como array
     public function single()
     {
         $this->execute();
-        return $this->stmt->fetch(PDO::FETCH_OBJ);
+        return $this->stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     // Obtener el conteo de filas del último statement
@@ -96,7 +108,7 @@ class Database
     {
         $this->query("SELECT COUNT(*) as total FROM {$table}");
         $row = $this->single();
-        return $row ? (int)$row->total : 0;
+        return $row ? (int)$row['total'] : 0;
     }
 
     // Obtener el último ID insertado

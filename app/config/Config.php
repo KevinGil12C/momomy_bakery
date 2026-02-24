@@ -14,4 +14,6 @@ class Config
     public const IMAP_PORT = 993;
     public const POP_PORT = 995;
     public const FROM_NAME = 'Momomy Bakery';
+    public const BUSINESS_ADDRESS = 'Av. Dulce 123, Ciudad de México, CP 01000';
+    public const DOMESTIC_TAX_ID = 'XAXX010101000';
 }

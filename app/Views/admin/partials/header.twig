@@ -1,0 +1,97 @@
+<header class="h-20 flex items-center justify-between px-8 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md border-b border-white/10 sticky top-0 z-10 transition-colors">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-2 text-sm">
+        <a href="{{ base_url }}admin/dashboard" class="flex items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-lg">home</span>
+        </a>
+        {% for breadcrumb in breadcrumbs %}
+            <span class="material-symbols-outlined text-xs text-slate-300">chevron_right</span>
+            {% if loop.last %}
+                <span class="font-bold text-slate-900 dark:text-white">{{ breadcrumb.label }}</span>
+            {% else %}
+                <a href="{{ base_url }}{{ breadcrumb.url }}" class="text-slate-500 hover:text-primary transition-colors">{{ breadcrumb.label }}</a>
+            {% endif %}
+        {% endfor %}
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="flex items-center gap-2 md:gap-4">
+        <!-- Dark Mode Toggle -->
+        <button onclick="toggleDarkMode()" class="p-2.5 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all active:scale-95">
+            <span class="material-symbols-outlined dark:hidden">dark_mode</span>
+            <span class="material-symbols-outlined hidden dark:block text-yellow-500">light_mode</span>
+        </button>
+
+        <!-- Notifications -->
+        <div class="relative group">
+            <button class="p-2.5 rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all active:scale-95">
+                <span class="material-symbols-outlined">notifications</span>
+                {% if stats.unread_messages > 0 or stats.pending_orders > 0 or stats.unread_quotations > 0 %}
+                    <span class="absolute top-2.5 right-2.5 size-2 bg-primary rounded-full border-2 border-white dark:border-background-dark shadow-sm animate-pulse"></span>
+                {% endif %}
+            </button>
+            <!-- Basic Dropdown -->
+            <div class="absolute right-0 top-full mt-2 w-72 glass border border-white/20 rounded-3xl p-4 shadow-2xl opacity-0 translate-y-2 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all">
+                <h5 class="font-bold text-sm mb-4">Notificaciones</h5>
+                <div class="space-y-3">
+                    {% if stats.pending_orders > 0 %}
+                    <a href="{{ base_url }}admin/orders" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition-colors">
+                        <div class="size-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center"><span class="material-symbols-outlined text-sm">shopping_cart</span></div>
+                        <p class="text-[11px] font-medium text-slate-600 dark:text-slate-400">{{ stats.pending_orders }} pedidos pendientes</p>
+                    </a>
+                    {% endif %}
+                    
+                    {% if stats.unread_quotations > 0 %}
+                    <a href="{{ base_url }}admin/quotations" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition-colors">
+                        <div class="size-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center"><span class="material-symbols-outlined text-sm">description</span></div>
+                        <p class="text-[11px] font-medium text-slate-600 dark:text-slate-400">{{ stats.unread_quotations }} peticiones de cotización</p>
+                    </a>
+                    {% endif %}
+
+                    {% if stats.unread_messages > 0 %}
+                    <a href="{{ base_url }}admin/contacts" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition-colors">
+                        <div class="size-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center"><span class="material-symbols-outlined text-sm">chat_bubble</span></div>
+                        <p class="text-[11px] font-medium text-slate-600 dark:text-slate-400">{{ stats.unread_messages }} mensajes nuevos</p>
+                    </a>
+                    {% endif %}
+
+                    {% if stats.pending_orders <= 0 and stats.unread_messages <= 0 and stats.unread_quotations <= 0 %}
+                    <p class="text-center text-xs text-slate-400 py-4 font-medium">No hay notificaciones nuevas</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="h-8 w-px bg-slate-200 dark:bg-white/10 mx-1"></div>
+
+        <!-- Profile -->
+        <div class="relative group">
+            <button class="flex items-center gap-3 pl-2 cursor-pointer outline-none transition-transform active:scale-95">
+                <div class="flex flex-col items-end hidden sm:flex">
+                    <span class="text-xs font-black text-slate-900 dark:text-white">{{ session.user_name|default('Chef') }}</span>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Administradora</span>
+                </div>
+                <div class="size-11 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-black shadow-inner overflow-hidden">
+                    {% if session.user_avatar %}
+                        <img src="{{ session.user_avatar }}" class="size-full object-cover">
+                    {% else %}
+                        {{ session.user_name|first|default('M')|upper }}
+                    {% endif %}
+                </div>
+            </button>
+
+            <!-- Profile Dropdown -->
+            <div class="absolute right-0 top-full mt-2 w-56 glass border border-white/20 rounded-3xl p-2 shadow-2xl opacity-0 translate-y-2 invisible group-hover:opacity-100 group-hover:translate-y-0 group-hover:visible transition-all">
+                <a href="{{ base_url }}admin/profile" class="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-xl">account_circle</span>
+                    <span class="text-sm font-bold">Mi Perfil</span>
+                </a>
+                <div class="h-px bg-slate-100 dark:bg-white/5 my-1 mx-2"></div>
+                <a href="{{ base_url }}logout" class="flex items-center gap-3 p-3 rounded-2xl hover:bg-red-500/10 text-slate-600 dark:text-slate-400 hover:text-red-500 transition-all">
+                    <span class="material-symbols-outlined text-xl">logout</span>
+                    <span class="text-sm font-bold">Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
