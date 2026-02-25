@@ -39,9 +39,14 @@
                 <div class="glass border border-white/20 dark:border-white/5 rounded-[2.5rem] overflow-hidden shadow-xl group transition-all hover:-translate-y-1">
                     <div class="aspect-[4/3] relative overflow-hidden">
                         <img src="{{ product.image_url|default('https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80') }}" 
-                             alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute top-4 right-4 px-3 py-1 bg-white/90 dark:bg-slate-900/90 rounded-full text-[10px] font-black uppercase text-primary border border-primary/10">
-                            {{ product.category }}
+                             alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 {{ not product.is_active ? 'grayscale opacity-50' : '' }}">
+                        <div class="absolute top-4 right-4 flex flex-col items-end gap-2">
+                            <div class="px-3 py-1 bg-white/90 dark:bg-slate-900/90 rounded-full text-[10px] font-black uppercase text-primary border border-primary/10 shadow-sm">
+                                {{ product.category }}
+                            </div>
+                            <div class="px-3 py-1 bg-{{ product.is_active ? 'green' : 'red' }}-500 text-white rounded-full text-[8px] font-black uppercase shadow-sm">
+                                {{ product.is_active ? 'PÚBLICO' : 'OCULTO' }}
+                            </div>
                         </div>
                     </div>
                     <div class="p-6">
@@ -59,9 +64,14 @@
                                 <span class="text-xs font-bold">{{ product.stock }} unidades</span>
                             </div>
                             <div class="flex gap-1">
-                                <a href="{{ base_url }}admin/inventory/edit/{{ product.id }}" class="size-10 rounded-xl hover:bg-primary/10 hover:text-primary text-slate-400 transition-colors flex items-center justify-center">
-                                    <span class="material-symbols-outlined text-xl">edit</span>
-                                </a>
+                                <a href="{{ base_url }}admin/inventory/toggle/{{ product.id }}" 
+                                    class="size-10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-{{ product.is_active ? 'green' : 'slate-400' }} transition-colors flex items-center justify-center"
+                                    title="{{ product.is_active ? 'Ocultar' : 'Activar' }}">
+                                     <span class="material-symbols-outlined text-xl">{{ product.is_active ? 'visibility' : 'visibility_off' }}</span>
+                                 </a>
+                                 <a href="{{ base_url }}admin/inventory/edit/{{ product.id }}" class="size-10 rounded-xl hover:bg-primary/10 hover:text-primary text-slate-400 transition-colors flex items-center justify-center">
+                                     <span class="material-symbols-outlined text-xl">edit</span>
+                                 </a>
                                 <a href="{{ base_url }}admin/inventory/delete/{{ product.id }}" 
                                    onclick="return confirm('¿Estás seguro de eliminar este postre?')"
                                    class="size-10 rounded-xl hover:bg-red-500/10 hover:text-red-500 text-slate-400 transition-colors flex items-center justify-center">
@@ -81,6 +91,8 @@
                 </div>
                 {% endfor %}
             </div>
+
+            {% include 'common/pagination.twig' with {'pager': pager} %}
         </div>
     </main>
 </div>

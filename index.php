@@ -6,6 +6,8 @@ use App\Controller\MainController;
 use App\Controller\ApiController;
 use App\Controller\AuthController;
 use App\Controller\AdminController;
+use App\Controller\CustomerController;
+use App\Controller\PublicController;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -33,13 +35,26 @@ if (!$rateLimiter->isAllowed($_SERVER['REMOTE_ADDR'])) {
 // 2. Router Setup
 $router = new Router();
 
-// Default route (Home)
-$router->get('/', [AuthController::class, 'showLogin']);
+// Public Catalog & Main Site
+$router->get('/', [PublicController::class, 'index']);
+$router->get('/catalog', [PublicController::class, 'catalog']);
+$router->get('/product/(\d+)', [PublicController::class, 'product']);
+$router->get('/contact', [PublicController::class, 'contact']);
+$router->get('/quotation', [PublicController::class, 'quotation']);
+$router->get('/privacy', [PublicController::class, 'privacy']);
+$router->get('/terms', [PublicController::class, 'terms']);
 
-// API Routes (For Vercel Frontend)
-$router->post('/api/contact', [ApiController::class, 'receiveContact']);
-$router->post('/api/order', [ApiController::class, 'receiveOrder']); // New order from front
-$router->post('/api/recovery', [ApiController::class, 'recovery']);
+// API & Interactions
+$router->get('/api/products', [ApiController::class, 'products']);
+$router->post('/api/order', [ApiController::class, 'receiveOrder']);
+$router->post('/api/contact', [ApiController::class, 'contact']);
+$router->post('/api/quotation/request', [ApiController::class, 'requestQuotation']);
+$router->get('/api/product/comments/(\d+)', [ApiController::class, 'getProductComments']);
+$router->post('/api/product/comment', [ApiController::class, 'postComment']);
+$router->post('/api/newsletter/subscribe', [ApiController::class, 'subscribeNewsletter']);
+$router->get('/api/newsletter/subscribers', [ApiController::class, 'getSubscribers']);
+$router->post('/api/recovery', [ApiController::class, 'recovery']); // Moved from previous Admin Auth Routes section
+$router->get('/order/status/(:any)', [ApiController::class, 'orderStatus']); // Moved from System Actions section
 
 // Admin Auth Routes
 $router->get('/login', [AuthController::class, 'showLogin']);
@@ -50,17 +65,40 @@ $router->get('/logout', [AuthController::class, 'logout']);
 
 // Admin Management Routes
 $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
+// Inventory Management
 $router->get('/admin/inventory', [AdminController::class, 'inventory']);
 $router->get('/admin/inventory/create', [AdminController::class, 'createProduct']);
 $router->post('/admin/inventory/store', [AdminController::class, 'storeProduct']);
-$router->get('/admin/inventory/edit/(:any)', [AdminController::class, 'editProduct']);
-$router->post('/admin/inventory/update/(:any)', [AdminController::class, 'updateProduct']);
+$router->get('/admin/inventory/edit/(\d+)', [AdminController::class, 'editProduct']);
+$router->post('/admin/inventory/update/(\d+)', [AdminController::class, 'updateProduct']);
+$router->get('/admin/inventory/status/(\d+)', [AdminController::class, 'toggleProductStatus']);
+
+// Category Management
+$router->get('/admin/categories', [AdminController::class, 'categories']);
+$router->post('/admin/categories/store', [AdminController::class, 'storeCategory']);
+$router->get('/admin/categories/delete/(\d+)', [AdminController::class, 'deleteCategory']);
+
+// News Management
+$router->get('/admin/news', [AdminController::class, 'news']);
+$router->get('/admin/news/create', [AdminController::class, 'createNews']);
+$router->post('/admin/news/store', [AdminController::class, 'storeNews']);
+$router->get('/admin/news/edit/(\d+)', [AdminController::class, 'editNews']);
+$router->post('/admin/news/update/(\d+)', [AdminController::class, 'updateNews']);
+$router->get('/admin/news/delete/(\d+)', [AdminController::class, 'deleteNews']);
+$router->get('/admin/subscribers', [AdminController::class, 'subscribers']);
+
+// Orders management
 $router->get('/admin/orders', [AdminController::class, 'orders']);
 $router->get('/admin/orders/create', [AdminController::class, 'createOrder']);
 $router->post('/admin/orders/store', [AdminController::class, 'storeOrder']);
 $router->get('/admin/orders/edit/(:any)', [AdminController::class, 'editOrder']);
 $router->post('/admin/orders/update/(:any)', [AdminController::class, 'updateOrder']);
 $router->get('/admin/orders/receipt/(:any)', [AdminController::class, 'generateReceipt']);
+
+// Featured Management
+$router->get('/admin/featured', [AdminController::class, 'featured']);
+$router->post('/admin/featured/update', [AdminController::class, 'updateFeatured']);
+
 $router->get('/admin/quotations', [AdminController::class, 'quotations']);
 $router->get('/admin/quotations/create', [AdminController::class, 'createQuotation']);
 $router->post('/admin/quotations/store', [AdminController::class, 'storeQuotation']);
@@ -88,6 +126,15 @@ $router->get('/admin/inventory/delete/(:any)', [AdminController::class, 'deleteP
 $router->get('/admin/orders/delete/(:any)', [AdminController::class, 'deleteOrder']);
 $router->get('/admin/quotations/delete/(:any)', [AdminController::class, 'deleteQuotationEntry']);
 $router->get('/admin/quotations/edit/(:any)', [AdminController::class, 'editQuotation']);
+
+// Customer portal (Connect)
+$router->get('/connect/order/(:any)', [CustomerController::class, 'viewOrder']);
+$router->get('/connect/register', [CustomerController::class, 'showRegister']);
+$router->post('/connect/register', [CustomerController::class, 'register']);
+$router->get('/connect/login', [CustomerController::class, 'showLogin']);
+$router->post('/connect/login', [CustomerController::class, 'login']);
+$router->get('/connect/logout', [CustomerController::class, 'logout']);
+$router->get('/connect/dashboard', [CustomerController::class, 'dashboard']);
 
 // API & Public External Endpoints
 $router->post('/api/contact', [ApiController::class, 'receiveContact']);

@@ -15,9 +15,17 @@
             <span class="material-symbols-outlined min-w-[24px]">inventory_2</span> 
             <span class="sidebar-label truncate">Inventario</span>
         </a>
+        <a href="{{ base_url }}admin/categories" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'categories' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">category</span> 
+            <span class="sidebar-label truncate">Categorías</span>
+        </a>
         <a href="{{ base_url }}admin/orders" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'orders' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
             <span class="material-symbols-outlined min-w-[24px]">shopping_cart</span> 
             <span class="sidebar-label truncate">Pedidos</span>
+        </a>
+        <a href="{{ base_url }}admin/featured" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'featured' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">stars</span> 
+            <span class="sidebar-label truncate">Destacados</span>
         </a>
         <a href="{{ base_url }}admin/quotations" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'quotations' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
             <span class="material-symbols-outlined min-w-[24px]">description</span> 
@@ -29,6 +37,14 @@
             {% if stats.unread_messages > 0 %}
                 <span class="size-2 bg-primary rounded-full ml-auto group-hover:bg-white transition-colors {{ active == 'contacts' ? 'bg-white' : '' }}"></span>
             {% endif %}
+        </a>
+        <a href="{{ base_url }}admin/news" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'news' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">newspaper</span> 
+            <span class="sidebar-label truncate">Noticias</span>
+        </a>
+        <a href="{{ base_url }}admin/subscribers" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'subscribers' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">mail</span> 
+            <span class="sidebar-label truncate">Suscriptores</span>
         </a>
         <a href="{{ base_url }}admin/users" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'users' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
             <span class="material-symbols-outlined min-w-[24px]">group</span> 

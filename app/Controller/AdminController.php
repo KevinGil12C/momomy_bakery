@@ -60,18 +60,87 @@ class AdminController extends Controller
     }
 
     /**
-     * Inventory management
+     * Inventory management with Pagination
      */
     public function inventory()
     {
+        $currentPage = $_GET['page'] ?? 1;
+        $itemsPerPage = 10;
+        $totalItems = $this->db->countAll('products');
+
+        $pager = $this->getPaginationData($totalItems, $itemsPerPage, $currentPage);
+
         $products = $this->db->getJoin('products', 'products.*, categories.name as category', [
             ['table' => 'categories', 'on' => 'products.category_id = categories.id']
-        ]);
+        ], [], 'products.id DESC', $pager['limit'], $pager['offset']);
 
         $this->showView('admin/inventory/index.twig', [
             'title' => 'Gestión de Inventario',
-            'products' => $products
+            'products' => $products,
+            'pager' => $pager
         ]);
+    }
+
+    /**
+     * Featured Management (Special of the Week and Home Specialties)
+     */
+    public function featured()
+    {
+        $allActive = $this->db->getJoin('products', 'products.*, categories.name as category', [
+            ['table' => 'categories', 'on' => 'products.category_id = categories.id']
+        ], ['is_active' => 1], 'name ASC');
+
+        $specialOfWeek = null;
+        $specialties = [];
+
+        foreach ($allActive as &$p) {
+            $p['image_url'] = $this->normalizeImageUrl($p['image_url']);
+            if ($p['is_special_of_week']) $specialOfWeek = $p;
+            if ($p['is_specialty']) $specialties[] = $p;
+        }
+
+        $this->showView('admin/featured/index.twig', [
+            'title' => 'Gestión de Destacados',
+            'all_products' => $allActive,
+            'special_of_week' => $specialOfWeek,
+            'specialties' => $specialties
+        ]);
+    }
+
+    /**
+     * Update Featured Status (AJAX or Form)
+     */
+    public function updateFeatured()
+    {
+        try {
+            if (!isset($_POST['id']) || !isset($_POST['type']) || !isset($_POST['value'])) {
+                throw new \Exception("Datos incompletos.");
+            }
+
+            $id = $_POST['id'];
+            $type = $_POST['type'];
+            $value = (int)$_POST['value'];
+
+            if (!in_array($type, ['is_specialty', 'is_special_of_week'])) {
+                throw new \Exception("Tipo de destacado no válido.");
+            }
+
+            // If it's special of the week, ensure only one is active
+            if ($type === 'is_special_of_week' && $value === 1) {
+                // Remove special status from all products
+                $this->db->rawQuery("UPDATE products SET is_special_of_week = 0");
+            }
+
+            $success = $this->db->update('products', [$type => $value], ['id' => $id]);
+
+            if (!$success) {
+                throw new \Exception("No se pudo actualizar la base de datos.");
+            }
+
+            $this->jsonResponse(['success' => true]);
+        } catch (\Exception $e) {
+            $this->jsonResponse(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -94,12 +163,17 @@ class AdminController extends Controller
         $imageUrl = $this->handleImageUpload();
 
         $data = [
-            'category_id' => $_POST['category_id'],
-            'name'        => $_POST['name'],
-            'description' => $_POST['description'],
-            'price'       => $_POST['price'],
-            'stock'       => $_POST['stock'],
-            'image_url'   => $imageUrl
+            'category_id'        => $_POST['category_id'],
+            'name'               => $_POST['name'],
+            'description'        => $_POST['description'],
+            'ingredients'        => $_POST['ingredients'] ?? '',
+            'characteristics'    => $_POST['characteristics'] ?? '',
+            'price'              => $_POST['price'],
+            'stock'              => $_POST['stock'],
+            'image_url'          => $imageUrl,
+            'is_specialty'       => isset($_POST['is_specialty']) ? 1 : 0,
+            'is_special_of_week' => isset($_POST['is_special_of_week']) ? 1 : 0,
+            'is_active'          => 1
         ];
 
         $this->db->insert('products', $data);
@@ -127,11 +201,16 @@ class AdminController extends Controller
     public function updateProduct($id)
     {
         $data = [
-            'category_id' => $_POST['category_id'],
-            'name'        => $_POST['name'],
-            'description' => $_POST['description'],
-            'price'       => $_POST['price'],
-            'stock'       => $_POST['stock']
+            'category_id'        => $_POST['category_id'],
+            'name'               => $_POST['name'],
+            'description'        => $_POST['description'],
+            'ingredients'        => $_POST['ingredients'] ?? '',
+            'characteristics'    => $_POST['characteristics'] ?? '',
+            'price'              => $_POST['price'],
+            'stock'              => $_POST['stock'],
+            'is_specialty'       => isset($_POST['is_specialty']) ? 1 : 0,
+            'is_special_of_week' => isset($_POST['is_special_of_week']) ? 1 : 0,
+            'is_active'          => isset($_POST['is_active']) ? 1 : 0
         ];
 
         $imageUrl = $this->handleImageUpload();
@@ -140,6 +219,19 @@ class AdminController extends Controller
         }
 
         $this->db->update('products', $data, ['id' => $id]);
+        $this->redirect('admin/inventory');
+    }
+
+    /**
+     * Toggle product visibility on public page
+     */
+    public function toggleProductStatus($id)
+    {
+        $product = $this->db->getOne('products', ['id' => $id]);
+        if ($product) {
+            $newStatus = $product['is_active'] ? 0 : 1;
+            $this->db->update('products', ['is_active' => $newStatus], ['id' => $id]);
+        }
         $this->redirect('admin/inventory');
     }
 
@@ -161,14 +253,22 @@ class AdminController extends Controller
     }
 
     /**
-     * View Orders
+     * View Orders with Pagination
      */
     public function orders()
     {
-        $orders = $this->db->getAll('orders', [], 'created_at DESC');
+        $currentPage = $_GET['page'] ?? 1;
+        $itemsPerPage = 10;
+        $totalItems = $this->db->countAll('orders');
+
+        $pager = $this->getPaginationData($totalItems, $itemsPerPage, $currentPage);
+
+        $orders = $this->db->getAll('orders', [], 'created_at DESC', $pager['limit'], $pager['offset']);
+
         $this->showView('admin/orders/index.twig', [
             'title' => 'Pedidos Recibidos',
-            'orders' => $orders
+            'orders' => $orders,
+            'pager' => $pager
         ]);
     }
 
@@ -194,8 +294,10 @@ class AdminController extends Controller
             'customer_last_name'  => $_POST['customer_last_name'],
             'customer_email'      => $_POST['customer_email'],
             'customer_phone'      => $_POST['customer_phone'],
-            'status'              => $_POST['status'] ?? 'pending',
-            'total_amount'        => $_POST['total_amount'] ?? 0
+            'total_amount'        => $_POST['total_amount'],
+            'status'              => 'pending',
+            'notes'               => $_POST['notes'] ?? '',
+            'tracking_token'      => bin2hex(random_bytes(16))
         ];
 
         $this->db->insert('orders', $orderData);
@@ -374,7 +476,7 @@ class AdminController extends Controller
 
         $pdfService = new PdfService();
         $business = $this->db->getOne('business_settings', ['id' => 1]);
-        $trackingUrl = $this->baseUrl . 'order/status/' . $orderId;
+        $trackingUrl = $this->baseUrl . 'connect/order/' . ($order['tracking_token'] ?? $order['id']);
 
         $html = $this->renderTemplate('admin/orders/receipt_template.twig', [
             'order' => $order,
@@ -456,7 +558,8 @@ class AdminController extends Controller
         $data = [
             'first_name' => $_POST['first_name'],
             'last_name'  => $_POST['last_name'],
-            'email'      => $_POST['email']
+            'email'      => $_POST['email'],
+            'is_2fa_enabled' => isset($_POST['is_2fa_enabled']) ? 1 : 0
         ];
 
         $avatarUrl = $this->handleFileWithDir($_FILES['avatar'] ?? null, 'users');
@@ -640,6 +743,146 @@ class AdminController extends Controller
     {
         $this->db->delete('quotations', ['id' => $id]);
         $this->redirect('admin/quotations');
+    }
+
+    /**
+     * Category Management
+     */
+    public function categories()
+    {
+        $categories = $this->db->getAll('categories');
+        $this->showView('admin/inventory/categories.twig', [
+            'title' => 'Gestionar Categorías',
+            'categories' => $categories
+        ]);
+    }
+
+    public function storeCategory()
+    {
+        $name = $_POST['name'] ?? '';
+        if ($name) {
+            $this->db->insert('categories', ['name' => $name]);
+        }
+        $this->redirect('admin/categories');
+    }
+
+    public function deleteCategory($id)
+    {
+        $this->db->delete('categories', ['id' => $id]);
+        $this->redirect('admin/categories');
+    }
+
+    /**
+     * News / Latest Updates Management
+     */
+    /**
+     * News management with Pagination
+     */
+    public function news()
+    {
+        $currentPage = $_GET['page'] ?? 1;
+        $itemsPerPage = 5;
+        $totalItems = $this->db->countAll('news');
+
+        $pager = $this->getPaginationData($totalItems, $itemsPerPage, $currentPage);
+
+        $news = $this->db->getAll('news', [], 'created_at DESC', $pager['limit'], $pager['offset']);
+        foreach ($news as &$item) {
+            $item['image_url'] = $this->normalizeImageUrl($item['image_url']);
+        }
+
+        $this->showView('admin/news/index.twig', [
+            'title' => 'Noticias y Novedades',
+            'news' => $news,
+            'pager' => $pager
+        ]);
+    }
+
+    public function createNews()
+    {
+        $this->showView('admin/news/edit.twig', [
+            'title' => 'Nueva Noticia'
+        ]);
+    }
+
+    public function storeNews()
+    {
+        $imageUrl = $this->handleFileWithDir($_FILES['image'] ?? null, 'news');
+        $isPublished = isset($_POST['is_published']) ? 1 : 0;
+
+        $data = [
+            'title'        => $_POST['title'],
+            'content'      => $_POST['content'],
+            'image_url'    => $imageUrl,
+            'is_published' => $isPublished
+        ];
+
+        $this->db->insert('news', $data);
+        $newsId = $this->db->lastInsertId();
+
+        // If published, notify subscribers
+        if ($isPublished) {
+            $subscribers = $this->db->getAll('newsletter_subscribers');
+            if (!empty($subscribers)) {
+                $emailService = new EmailService();
+                $subject = "✨ Nueva Noticia en Momomy Bakery: " . $data['title'];
+
+                // Simple HTML body
+                $body = "<h2>{$data['title']}</h2>";
+                $body .= "<p>" . nl2br($data['content']) . "</p>";
+                $body .= "<br><a href='{$this->baseUrl}#news' style='background:#f0427c; color:white; padding:10px 20px; border-radius:10px; text-decoration:none;'>Ver más detalles</a>";
+
+                foreach ($subscribers as $sub) {
+                    $emailService->send($sub['email'], $subject, $body);
+                }
+            }
+        }
+
+        $this->redirect('admin/news');
+    }
+
+    public function editNews($id)
+    {
+        $item = $this->db->getOne('news', ['id' => $id]);
+        $this->showView('admin/news/edit.twig', [
+            'title' => 'Editar Noticia',
+            'news' => $item
+        ]);
+    }
+
+    public function updateNews($id)
+    {
+        $data = [
+            'title'        => $_POST['title'],
+            'content'      => $_POST['content'],
+            'is_published' => isset($_POST['is_published']) ? 1 : 0
+        ];
+
+        $imageUrl = $this->handleFileWithDir($_FILES['image'] ?? null, 'news');
+        if ($imageUrl) {
+            $data['image_url'] = $imageUrl;
+        }
+
+        $this->db->update('news', $data, ['id' => $id]);
+        $this->redirect('admin/news');
+    }
+
+    public function deleteNews($id)
+    {
+        $this->db->delete('news', ['id' => $id]);
+        $this->redirect('admin/news');
+    }
+
+    /**
+     * Newsletter Subscribers Management
+     */
+    public function subscribers()
+    {
+        $subscribers = $this->db->getAll('newsletter_subscribers', [], 'subscribed_at DESC');
+        $this->showView('admin/news/subscribers.twig', [
+            'title' => 'Suscriptores al Newsletter',
+            'subscribers' => $subscribers
+        ]);
     }
 
     /**

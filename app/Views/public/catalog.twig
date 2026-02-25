@@ -1,0 +1,203 @@
+{% extends "public/layout.twig" %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-6 py-12">
+    <div class="flex flex-col md:flex-row gap-12">
+        <!-- Sidebar Filter -->
+        <aside class="w-full md:w-80 space-y-8">
+            <div class="sticky top-28 space-y-8">
+                <!-- Categories Container -->
+                <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-primary/5 shadow-xl">
+                    <h2 class="text-xl font-black mb-8 flex items-center gap-3 dark:text-white">
+                        <span class="material-symbols-outlined text-primary" aria-hidden="true">filter_list</span> 
+                        Categorías
+                    </h2>
+                    <nav class="flex flex-col gap-3" aria-label="Filtro de categorías">
+                        <button onclick="filterCategory('all')" class="cat-btn w-full flex items-center gap-4 px-6 py-4 rounded-2xl bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20" data-cat="all">
+                            <span class="material-symbols-outlined text-xl">auto_awesome</span> Todo
+                        </button>
+                        {% for cat in categories %}
+                        <button onclick="filterCategory('{{ cat.id }}')" class="cat-btn w-full flex items-center gap-4 px-6 py-4 rounded-2xl bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-300 font-bold hover:bg-primary/10 hover:text-primary transition-all group" data-cat="{{ cat.id }}">
+                            <span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">bakery_dining</span> {{ cat.name }}
+                        </button>
+                        {% endfor %}
+                    </nav>
+                </div>
+
+                <!-- Promo Box -->
+                {% if special_of_week %}
+                <div class="rounded-[2.5rem] overflow-hidden relative aspect-[3/4] shadow-2xl group border border-white/10">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-primary/20 to-transparent flex flex-col justify-end p-8 text-white z-10">
+                        <span class="bg-primary/20 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest w-fit mb-4">Recomendado</span>
+                        <p class="font-black text-2xl leading-tight mb-2 tracking-tighter italic">Especial: {{ special_of_week.name }}</p>
+                        <div class="flex items-center gap-1 mb-6 text-amber-400">
+                            {% for i in 1..5 %}
+                            <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' {{ i <= special_of_week.avg_rating ? 1 : 0 }}">star</span>
+                            {% endfor %}
+                        </div>
+                        <a href="{{ base_url }}product/{{ special_of_week.id }}" class="bg-white text-primary px-8 py-4 rounded-2xl text-xs font-black w-fit hover:scale-105 active:scale-95 transition-all shadow-xl text-center">Ver Detalles</a>
+                    </div>
+                    <img alt="{{ special_of_week.name }}" loading="lazy" class="size-full object-cover group-hover:scale-110 transition-transform duration-700" src="{{ special_of_week.image_url }}"/>
+                    <div class="absolute inset-0 bg-primary/10 mix-blend-overlay"></div>
+                </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <section class="flex-1">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter">Nuestro Menú <span class="text-primary italic">Dulce</span></h1>
+                    <p class="text-slate-500 font-medium italic">Postres hechos a mano con amor y magia</p>
+                </div>
+            </div>
+
+            <!-- Search Bar (Full Width) -->
+            <div class="relative w-full group mb-6">
+                <span class="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                <input type="text" id="product-search" placeholder="Busca tu postre favorito..." aria-label="Buscar productos"
+                    class="w-full pl-14 pr-6 py-5 rounded-[2rem] border-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 outline-none shadow-lg transition-all font-bold text-sm">
+            </div>
+
+            <!-- Filters Row -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-12">
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-[2rem] shadow-sm border border-primary/5 flex-1">
+                    <div class="flex items-center gap-2 px-3">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">$ Min</span>
+                        <input type="number" id="price-min" placeholder="0" aria-label="Precio mínimo" class="w-20 bg-transparent border-none p-0 text-sm font-black text-primary focus:ring-0 outline-none">
+                    </div>
+                    <div class="w-px h-8 bg-slate-100 dark:bg-white/10"></div>
+                    <div class="flex items-center gap-2 px-3">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">$ Max</span>
+                        <input type="number" id="price-max" placeholder="999" aria-label="Precio máximo" class="w-20 bg-transparent border-none p-0 text-sm font-black text-primary focus:ring-0 outline-none">
+                    </div>
+                    <button onclick="applyFilters()" class="bg-primary text-white size-10 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-primary/20" aria-label="Aplicar filtro de precio">
+                        <span class="material-symbols-outlined text-sm">filter_list</span>
+                    </button>
+                </div>
+
+                <select id="sort-price" onchange="applyFilters()" aria-label="Ordenar productos" class="sm:w-56 px-6 py-4 rounded-[2rem] border-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 outline-none shadow-sm font-bold text-sm appearance-none cursor-pointer">
+                    <option value="default">Ordenar por...</option>
+                    <option value="low">Precio: Menor a Mayor</option>
+                    <option value="high">Precio: Mayor a Menor</option>
+                </select>
+            </div>
+
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for product in products %}
+                <article class="product-item group" 
+                    data-category="{{ product.category_id }}" 
+                    data-name="{{ product.name|lower }}" 
+                    data-price="{{ product.price }}">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-[3rem] overflow-hidden border border-primary/5 shadow-sm hover:shadow-2xl transition-all group/card flex flex-col h-full">
+                        <a href="{{ base_url }}product/{{ product.id }}" class="aspect-square relative rounded-[2.5rem] overflow-hidden mb-6 block group">
+                            <img alt="{{ product.name }}" loading="lazy" class="size-full object-cover group-hover:scale-110 transition-transform duration-700" src="{{ product.image_url }}"/>
+                            <div class="absolute top-4 left-4">
+                                <span class="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black text-primary border border-white/50 shadow-sm uppercase tracking-tighter">
+                                    {{ product.category_name }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <div class="flex-1 flex flex-col gap-2">
+                            <a href="{{ base_url }}product/{{ product.id }}">
+                                <h3 class="font-black text-lg text-slate-900 dark:text-white truncate group-hover/card:text-primary transition-colors tracking-tight italic leading-tight">{{ product.name }}</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex text-amber-400">
+                                        {% for i in 1..5 %}
+                                        <span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' {{ i <= product.avg_rating ? 1 : 0 }}">star</span>
+                                        {% endfor %}
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-400">({{ product.total_reviews }})</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 font-medium line-clamp-2 mt-2 italic leading-relaxed">{{ product.description }}</p>
+                            </a>
+                        </div>
+                        
+                        <div class="flex items-center justify-between pt-6 mt-auto border-t border-slate-50 dark:border-white/5 gap-2">
+                            <span class="text-2xl font-black text-primary tracking-tighter">${{ product.price|number_format(2) }}</span>
+                            <div class="flex items-center bg-slate-50 dark:bg-white/5 rounded-2xl p-1 border border-primary/5">
+                                <input type="number" id="qty-{{ product.id }}" value="1" min="1" max="{{ product.stock }}"
+                                       class="w-10 bg-transparent border-none text-center font-black text-xs focus:ring-0 p-0 dark:text-white">
+                                <button onclick="const q = document.getElementById('qty-{{ product.id }}'); addToCart({id: {{ product.id }}, name: '{{ product.name }}', price: {{ product.price }}, img: '{{ product.image_url }}', qty: parseInt(q.value)})" 
+                                        class="bg-slate-900 dark:bg-primary text-white flex items-center justify-center size-10 rounded-xl text-[10px] font-black shadow-xl shadow-primary/10 active:scale-95 transition-all"
+                                        aria-label="Añadir {{ product.name }} al carrito">
+                                    <span class="material-symbols-outlined text-base">shopping_basket</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                {% else %}
+                <div class="col-span-full py-40 text-center space-y-4 opacity-30">
+                    <span class="material-symbols-outlined text-8xl italic" aria-hidden="true">cookie_off</span>
+                    <p class="text-xl font-black italic">No hay postres en esta categoría aún.</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% include 'common/pagination.twig' with {'pager': pager} %}
+        </section>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentCategory = 'all';
+
+    function filterCategory(catId) {
+        currentCategory = catId;
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/20');
+            btn.classList.add('bg-slate-50', 'dark:bg-slate-700/50', 'text-slate-500', 'dark:text-slate-300');
+            if (btn.dataset.cat == catId) {
+                btn.classList.remove('bg-slate-50', 'dark:bg-slate-700/50', 'text-slate-500', 'dark:text-slate-300');
+                btn.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/20');
+            }
+        });
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const grid = document.getElementById('product-grid');
+        const items = Array.from(document.querySelectorAll('.product-item'));
+        const query = document.getElementById('product-search').value.toLowerCase();
+        const minPrice = parseFloat(document.getElementById('price-min').value) || 0;
+        const maxPrice = parseFloat(document.getElementById('price-max').value) || Infinity;
+        const sortType = document.getElementById('sort-price').value;
+
+        // 1. Filter
+        items.forEach(item => {
+            const name = item.dataset.name;
+            const category = item.dataset.category;
+            const price = parseFloat(item.dataset.price);
+
+            const matchesSearch = name.includes(query);
+            const matchesCategory = currentCategory === 'all' || category === currentCategory;
+            const matchesPrice = price >= minPrice && price <= maxPrice;
+
+            if (matchesSearch && matchesCategory && matchesPrice) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+
+        // 2. Sort
+        if (sortType !== 'default') {
+            items.sort((a, b) => {
+                const priceA = parseFloat(a.dataset.price);
+                const priceB = parseFloat(b.dataset.price);
+                return sortType === 'low' ? priceA - priceB : priceB - priceA;
+            });
+            items.forEach(item => grid.appendChild(item));
+        }
+    }
+
+    // Live Search Event
+    document.getElementById('product-search').addEventListener('input', applyFilters);
+</script>
+{% endblock %}

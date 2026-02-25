@@ -78,6 +78,16 @@
             <p class="text-[10px] font-bold text-primary uppercase tracking-widest">¿Tienes dudas?</p>
             <p class="text-sm font-medium text-slate-700 font-bold tracking-tight">Llámanos al: {{ business.phone|default('555-MOMOMY') }}</p>
         </div>
+
+        {% if is_guest and not order.customer_id %}
+        <div class="pt-4 border-t border-slate-100 text-center">
+            <p class="text-xs text-slate-500 mb-3">¿Quieres guardar tus pedidos y gestionar cotizaciones?</p>
+            <a href="{{ base_url }}connect/register?claim={{ order.tracking_token }}" 
+               class="inline-flex items-center gap-2 text-primary font-bold text-sm hover:underline">
+               <span class="material-symbols-outlined text-sm">person_add</span> Crear mi cuenta Momomy
+            </a>
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>

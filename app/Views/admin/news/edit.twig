@@ -1,0 +1,99 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    {% include 'admin/partials/sidebar.twig' with {'active': 'news'} %}
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [
+            {label: 'Noticias', url: 'admin/news'},
+            {label: (news ? 'Editar' : 'Nueva'), url: '#'}
+        ]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="mb-12">
+                <h2 class="text-4xl font-black text-slate-900 dark:text-white tracking-tighter italic">{% if news %}Editar{% else %}Nueva{% endif %} Noticia</h2>
+                <p class="text-slate-500 font-medium">Comparte novedades con tus clientes</p>
+            </div>
+
+            <form action="{{ base_url }}admin/news/{% if news %}update/{{ news.id }}{% else %}store{% endif %}" method="POST" enctype="multipart/form-data" class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <!-- Left: Media -->
+                <div class="lg:col-span-5 space-y-8">
+                    <div class="glass p-8 rounded-[3.5rem] border border-white/20 shadow-2xl space-y-8">
+                        <div class="space-y-4">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 px-2 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">image</span> Imagen de Portada
+                            </h3>
+                            <div class="relative group aspect-video rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-primary transition-all">
+                                <img id="preview" src="{{ news.image_url|default('') }}" class="size-full object-cover {{ news.image_url ? '' : 'hidden' }}">
+                                <div id="upload-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 {{ news.image_url ? 'hidden' : '' }}">
+                                    <span class="material-symbols-outlined text-4xl mb-2">add_a_photo</span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest">Subir Imagen</span>
+                                </div>
+                                <input type="file" name="image" id="image-input" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                            </div>
+                            <p class="text-[10px] text-slate-400 font-bold px-2 italic text-center">Formato recomendado: 16:9 (Horizontal)</p>
+                        </div>
+
+                        <div class="p-6 bg-primary/5 rounded-[2rem] border border-primary/10">
+                            <div class="flex items-center gap-4">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="is_published" class="sr-only peer" {{ (not news or news.is_published) ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                </label>
+                                <div>
+                                    <p class="text-sm font-black dark:text-white uppercase tracking-tighter">Publicar Inmediatamente</p>
+                                    <p class="text-[10px] text-slate-500 font-medium">Si se desactiva, quedará como borrador.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Content -->
+                <div class="lg:col-span-7 space-y-8">
+                    <div class="glass p-10 rounded-[3.5rem] border border-white/20 shadow-2xl space-y-8">
+                        <div class="space-y-2">
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 px-2 italic">Título Sugerente</label>
+                            <input type="text" name="title" value="{{ news.title }}" required
+                                class="w-full px-6 py-5 rounded-3xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/20 outline-none transition-all font-black text-2xl tracking-tight italic"
+                                placeholder="Ej: ¡Llegó la temporada de Fresas con Crema!">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 px-2 italic">Contenido de la Noticia</label>
+                            <textarea name="content" rows="12" required
+                                class="w-full px-8 py-6 rounded-[2.5rem] border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/20 outline-none transition-all font-medium leading-relaxed resize-none custom-scrollbar"
+                                placeholder="Escribe aquí toda la magia... Explica qué hay de nuevo, precios especiales, o simplemente saluda a tus clientes.">{{ news.content }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="submit" class="flex-1 bg-primary text-white py-6 rounded-3xl font-black text-lg flex items-center justify-center gap-4 shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all">
+                            <span class="material-symbols-outlined">save</span> GUARDAR NOTICIA
+                        </button>
+                        <a href="{{ base_url }}admin/news" class="bg-slate-100 dark:bg-white/5 text-slate-500 px-10 py-6 rounded-3xl font-black text-xs flex items-center justify-center uppercase tracking-widest hover:bg-slate-200 transition-all">
+                            Cancelar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.getElementById('image-input').onchange = evt => {
+        const [file] = evt.target.files;
+        if (file) {
+            const preview = document.getElementById('preview');
+            const placeholder = document.getElementById('upload-placeholder');
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        }
+    }
+</script>
+{% endblock %}

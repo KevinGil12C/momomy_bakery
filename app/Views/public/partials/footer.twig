@@ -1,0 +1,119 @@
+<footer class="bg-slate-900 text-slate-300 py-16 px-6 lg:px-20 mt-20 rounded-t-[4rem] relative overflow-hidden">
+    <!-- Subtle Background Glow -->
+    <div class="absolute -top-32 -left-32 size-64 bg-primary/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-32 -right-32 size-64 bg-primary/10 rounded-full blur-3xl"></div>
+
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
+        <div class="space-y-6">
+            <div class="flex items-center gap-3 text-white">
+                <span class="material-symbols-outlined text-4xl text-primary italic">bakery_dining</span>
+                <span class="text-2xl font-black italic tracking-tighter">Momomi<span class="text-primary italic">Bakery</span></span>
+            </div>
+            <p class="text-sm leading-relaxed opacity-60 font-medium italic">
+                Haciendo el mundo un lugar más dulce y tierno. Visítanos y descubre la magia artesanal en cada bocado, hecha con el corazón.
+            </p>
+        </div>
+        <div>
+            <h5 class="text-white font-black uppercase tracking-widest text-xs mb-8 flex items-center gap-2">
+                <span class="w-8 h-px bg-primary/50"></span> Explorar
+            </h5>
+            <ul class="space-y-4 text-sm font-bold">
+                <li><a href="{{ base_url }}catalog" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-[10px]">arrow_forward</span> Nuestro Menú</a></li>
+                <li><a href="{{ base_url }}quotation" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-[10px]">arrow_forward</span> Solicitar Cotización</a></li>
+                <li><a href="{{ base_url }}contact" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-[10px]">arrow_forward</span> Ubicación y Horarios</a></li>
+            </ul>
+        </div>
+        <div>
+            <h5 class="text-white font-black uppercase tracking-widest text-xs mb-8 flex items-center gap-2">
+                <span class="w-8 h-px bg-primary/50"></span> Mi Cuenta
+            </h5>
+            <ul class="space-y-4 text-sm font-bold">
+                <li><a href="{{ base_url }}connect/login" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-[10px]">arrow_forward</span> Iniciar Sesión</a></li>
+                <li><a href="{{ base_url }}connect/dashboard" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-[10px]">arrow_forward</span> Historial de Pedidos</a></li>
+                <li><a href="{{ base_url }}admin/login" class="hover:text-slate-500 transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-[10px]">admin_panel_settings</span> Acceso Staff</a></li>
+            </ul>
+        </div>
+        <div>
+            <h5 class="text-white font-black uppercase tracking-widest text-xs mb-8 flex items-center gap-2">
+                <span class="w-8 h-px bg-primary/50"></span> Boletín Dulce
+            </h5>
+            <div class="space-y-6">
+                <p class="text-xs font-medium opacity-50">Suscríbete para recibir ofertas y nuevas creaciones de temporada.</p>
+                <div class="flex bg-white/5 border border-white/10 rounded-2xl p-1.5 group focus-within:border-primary/50 transition-all">
+                    <input id="newsletter-email" class="bg-transparent border-none px-4 py-2 text-sm w-full outline-none text-white focus:ring-0 placeholder:text-slate-600 font-bold" placeholder="tu@correo.com" type="email"/>
+                    <button onclick="subscribeNewsletter()" class="bg-primary text-white size-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex flex-col md:flex-row items-center gap-6">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 italic">
+                © {{ current_year }} Momomi Bakery. Hecho con amor.
+            </p>
+            <div class="flex gap-4">
+                <a href="{{ base_url }}privacy" class="text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-primary transition-colors">Aviso de Privacidad</a>
+                <a href="{{ base_url }}terms" class="text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-primary transition-colors">Términos y Condiciones</a>
+            </div>
+        </div>
+        <div class="flex gap-8">
+            <a href="https://instagram.com" target="_blank" class="group transition-all">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-primary">Instagram</span>
+            </a>
+            <a href="https://facebook.com" target="_blank" class="group transition-all">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-primary">Facebook</span>
+            </a>
+            <a href="https://tiktok.com" target="_blank" class="group transition-all">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-primary">TikTok</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        async function subscribeNewsletter() {
+            const emailInput = document.getElementById('newsletter-email');
+            const email = emailInput.value;
+
+            if (!email || !email.includes('@')) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Ops...',
+                    text: 'Por favor, ingresa un correo válido 🍰',
+                    confirmButtonColor: '#f0427c'
+                });
+            }
+
+            try {
+                const response = await fetch('{{ base_url }}api/newsletter/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Bienvenido!',
+                        text: data.message,
+                        confirmButtonColor: '#f0427c'
+                    });
+                    emailInput.value = '';
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Nota',
+                        text: data.error || data.message,
+                        confirmButtonColor: '#f0427c'
+                    });
+                }
+            } catch (error) {
+                Swal.fire('Error', 'No pudimos procesar tu suscripción 🧁', 'error');
+            }
+        }
+    </script>
+</footer>

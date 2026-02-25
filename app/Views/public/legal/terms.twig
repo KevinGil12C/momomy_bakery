@@ -1,0 +1,62 @@
+{% extends "public/layout.twig" %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto px-6 py-20">
+    <div class="space-y-12 text-slate-700 dark:text-slate-300">
+        <header class="text-center space-y-4">
+            <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight italic">TÉRMINOS Y CONDICIONES DE USO</h1>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contrato de adhesión para el uso de servicios electrónicos</p>
+        </header>
+
+        <div class="prose prose-slate dark:prose-invert max-w-none space-y-8 font-medium leading-relaxed">
+            <p class="italic text-sm bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border-l-4 border-primary">
+                Bienvenido a Momomy Bakery. Al acceder a este sitio web y realizar un pedido, usted acepta estar sujeto a los siguientes términos y condiciones en su totalidad. Si no está de acuerdo con alguna parte, le sugerimos abstenerse de utilizar nuestros servicios.
+            </p>
+
+            <section class="space-y-4">
+                <h2 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">I. Naturaleza del Servicio</h2>
+                <p>Momomy Bakery ofrece servicios de repostería artesanal mediante pedidos en línea. Todas las transacciones realizadas en este sitio están sujetas a la disponibilidad de ingredientes y capacidad de producción artesanal.</p>
+            </section>
+
+            <section class="space-y-4">
+                <h2 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">II. Registro y Seguridad de Cuenta</h2>
+                <p>Para acceder a ciertas funciones (reseñas, historial), el usuario deberá crear una cuenta. Usted es responsable de:</p>
+                <ul class="list-disc pl-8 space-y-2">
+                    <li>Mantener la confidencialidad de su contraseña.</li>
+                    <li>Notificar de forma inmediata cualquier uso no autorizado.</li>
+                    <li>Proporcionar información veraz y actualizada.</li>
+                </ul>
+            </section>
+
+            <section class="space-y-4">
+                <h2 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">III. Políticas de Venta y Pago</h2>
+                <div class="space-y-4">
+                    <p><b>A. Precios:</b> Todos los precios están expresados en Moneda Nacional e incluyen impuestos correspondientes, salvo indicación contraria.</p>
+                    <p><b>B. Métodos de Pago:</b> Aceptamos los métodos especificados en el proceso de checkout. El pedido no se procesará hasta la confirmación de la recepción de fondos.</p>
+                    <p><b>C. Cancelaciones:</b> Debido a la naturaleza perecedera y artesanal de los productos, las cancelaciones deben realizarse con al menos 24 horas de anticipación a la fecha de entrega.</p>
+                </div>
+            </section>
+
+            <section class="space-y-4">
+                <h2 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">IV. Propiedad Intelectual</h2>
+                <p>Todo el contenido presente en este sitio, incluyendo pero no limitado a logotipos, fotografías de productos, diseños gráficos y código fuente, son propiedad exclusiva de Momomy Bakery y están protegidos por las leyes internacionales de derechos de autor.</p>
+            </section>
+
+            <section class="space-y-4">
+                <h2 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">V. Limitación de Responsabilidad</h2>
+                <p>Momomy Bakery no será responsable por daños indirectos, incidentales o punitivos resultantes del uso de sus servicios, incluyendo reacciones alérgicas si el cliente no especificó restricciones dietéticas en las notas del pedido.</p>
+            </section>
+
+            <section class="space-y-4">
+                <h2 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">VI. Jurisdicción y Ley Aplicable</h2>
+                <p>Cualquier controversia derivada de este contrato será resuelta de acuerdo con las leyes y ante los tribunales competentes de {{ config.BUSINESS_ADDRESS|split(',')|last }}, renunciando expresamente a cualquier otro fuero que pudiera corresponder por razón de domicilio presente o futuro.</p>
+            </section>
+        </div>
+
+        <footer class="pt-12 border-t border-primary/10 text-center">
+             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Momomy Bakery © 2026 - Arte en Repostería</p>
+            <a href="{{ base_url }}" class="text-primary font-black uppercase tracking-widest text-xs hover:underline decoration-2">Entendido</a>
+        </footer>
+    </div>
+</section>
+{% endblock %}

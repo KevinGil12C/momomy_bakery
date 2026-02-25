@@ -98,4 +98,42 @@ class Controller
         header("Location: " . $this->baseUrl . ltrim($path, '/'));
         exit;
     }
+
+    /**
+     * Normalize Image URL to avoid double base_url and ensure correct path
+     */
+    protected function normalizeImageUrl($path)
+    {
+        if (empty($path)) return $this->baseUrl . 'public/uploads/products/placeholder.png';
+
+        // If it already contains the full URL or starts with /momomy_bakery, return as is
+        if (strpos($path, 'http') === 0 || strpos($path, $this->baseUrl) === 0) {
+            return $path;
+        }
+
+        // If it starts with / but not base_url, it might be a root-relative path
+        if (strpos($path, '/') === 0) {
+            return $path;
+        }
+
+        // Otherwise, it's relative to the project root
+        return $this->baseUrl . $path;
+    }
+
+    /**
+     * Pagination Helper
+     */
+    protected function getPaginationData($totalItems, $itemsPerPage, $currentPage)
+    {
+        $totalPages = max(1, ceil($totalItems / $itemsPerPage));
+        $currentPage = max(1, min($totalPages, (int)$currentPage));
+        $offset = ($currentPage - 1) * $itemsPerPage;
+
+        return [
+            'current_page' => $currentPage,
+            'total_pages'  => $totalPages,
+            'offset'       => $offset,
+            'limit'        => $itemsPerPage
+        ];
+    }
 }

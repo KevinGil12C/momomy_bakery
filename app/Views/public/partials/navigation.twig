@@ -1,0 +1,52 @@
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-6 py-4 lg:px-20">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <button onclick="document.getElementById('mobile-menu').classList.toggle('max-h-0'); document.getElementById('mobile-menu').classList.toggle('max-h-64');" 
+                class="md:hidden p-2 rounded-full hover:bg-primary/10 text-primary" aria-label="Abrir menú móvil">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <a href="{{ base_url }}" class="flex items-center gap-3" aria-label="Volver al inicio">
+                <div class="size-10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-4xl" aria-hidden="true">bakery_dining</span>
+                </div>
+                <span class="text-xl font-extrabold tracking-tight text-primary">Momomi</span>
+            </a>
+        </div>
+        
+        <nav class="hidden md:flex items-center gap-8 text-slate-600 dark:text-slate-300">
+            <a href="{{ base_url }}" class="text-sm font-semibold hover:text-primary transition-colors">Inicio</a>
+            <a href="{{ base_url }}catalog" class="text-sm font-semibold hover:text-primary transition-colors">Productos</a>
+            <a href="{{ base_url }}quotation" class="text-sm font-semibold hover:text-primary transition-colors">Cotizar</a>
+            <a href="{{ base_url }}contact" class="text-sm font-semibold hover:text-primary transition-colors">Contacto</a>
+            {% if session.customer_id %}
+            <a href="{{ base_url }}connect/dashboard" class="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-xs font-black hover:bg-primary hover:text-white transition-all">
+                <span class="material-symbols-outlined text-sm">account_circle</span>
+                {{ session.customer_name }}
+            </a>
+            {% else %}
+            <a href="{{ base_url }}connect/login" class="text-sm font-semibold hover:text-primary transition-colors">Mi Portal</a>
+            {% endif %}
+        </nav>
+
+        <div class="flex items-center gap-2 md:gap-4">
+            <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-primary/10 text-primary" aria-label="Cambiar modo de luz/oscuridad">
+                <span class="material-symbols-outlined theme-icon" aria-hidden="true">dark_mode</span>
+            </button>
+            <button onclick="toggleCart()" class="relative p-2 rounded-full bg-primary text-white flex items-center justify-center animate-bounce-subtle" aria-label="Ver carrito">
+                <span class="material-symbols-outlined" aria-hidden="true">shopping_basket</span>
+                <span class="cart-count-badge absolute -top-1 -right-1 size-5 bg-slate-900 border-2 border-white rounded-full text-[10px] items-center justify-center flex hidden">0</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden max-h-0 overflow-hidden transition-all duration-300 bg-background-light dark:bg-background-dark">
+        <nav class="flex flex-col p-6 gap-4 border-t border-primary/5">
+            <a href="{{ base_url }}" class="text-lg font-bold flex items-center gap-3"><span class="material-symbols-outlined text-primary">home</span> Inicio</a>
+            <a href="{{ base_url }}catalog" class="text-lg font-bold flex items-center gap-3"><span class="material-symbols-outlined text-primary">bakery_dining</span> Productos</a>
+            <a href="{{ base_url }}quotation" class="text-lg font-bold flex items-center gap-3"><span class="material-symbols-outlined text-primary">receipt_long</span> Cotizar</a>
+            <a href="{{ base_url }}contact" class="text-lg font-bold flex items-center gap-3"><span class="material-symbols-outlined text-primary">chat_bubble</span> Contacto</a>
+            <a href="{{ base_url }}connect/login" class="text-lg font-bold flex items-center gap-3"><span class="material-symbols-outlined text-primary">account_circle</span> Mi Portal</a>
+        </nav>
+    </div>
+</header>

@@ -1,0 +1,31 @@
+{% extends "public/layout.twig" %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto px-6 py-12 lg:py-20">
+    <div class="bg-white dark:bg-slate-800 p-10 md:p-16 rounded-[3rem] shadow-2xl border border-primary/5">
+        <h1 class="text-4xl font-black mb-8 text-slate-900 dark:text-white italic">Aviso de <span class="text-primary italic">Privacidad</span></h1>
+        
+        <div class="prose prose-slate dark:prose-invert max-w-none space-y-6 text-slate-600 dark:text-slate-400 font-medium">
+            <p>En <strong>Momomy Bakery</strong>, la privacidad de nuestros clientes es nuestra prioridad. Este aviso describe cómo recopilamos y protegemos tu información.</p>
+            
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">1. Recopilación de Datos</h3>
+            <p>Recopilamos información personal como nombre, correo electrónico y teléfono únicamente cuando realizas un pedido o solicitas una cotización.</p>
+
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">2. Uso de la Información</h3>
+            <p>Tu información se utiliza exclusivamente para procesar pedidos, enviar cotizaciones y mejorar nuestra comunicación contigo. No compartimos tus datos con terceros para fines publicitarios.</p>
+
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">3. Seguridad</h3>
+            <p>Implementamos medidas de seguridad técnicas para proteger tus datos personales contra acceso no autorizado o divulgación.</p>
+
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">4. Tus Derechos</h3>
+            <p>Puedes solicitar el acceso, rectificación o eliminación de tus datos personales en cualquier momento contactándonos a través de nuestro formulario de contacto.</p>
+        </div>
+        
+        <div class="mt-12 pt-8 border-t border-slate-100 dark:border-slate-700">
+            <a href="{{ base_url }}" class="text-primary font-black flex items-center gap-2 hover:gap-4 transition-all">
+                <span class="material-symbols-outlined">arrow_back</span> Regresar al Inicio
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    {% include 'admin/partials/sidebar.twig' with {'active': 'news'} %}
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [{label: 'Noticias', url: 'admin/news'}, {label: 'Suscriptores', url: '#'}]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="mb-12 flex justify-between items-end">
+                <div>
+                    <h2 class="text-4xl font-black tracking-tighter italic">Lista de Suscriptores</h2>
+                    <p class="text-slate-500 font-medium italic">Personas que han solicitado recibir tus novedades por correo.</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl overflow-hidden border border-primary/5">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-white/5">
+                            <th class="px-8 py-6 text-xs font-black uppercase tracking-widest text-slate-400">Correo Electrónico</th>
+                            <th class="px-8 py-6 text-xs font-black uppercase tracking-widest text-slate-400">Fecha de Suscripción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-primary/5">
+                        {% for sub in subscribers %}
+                        <tr class="hover:bg-primary/5 transition-all group">
+                            <td class="px-8 py-6">
+                                <span class="font-black text-slate-700 dark:text-white">{{ sub.email }}</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ sub.subscribed_at|date('d M Y, H:i') }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="px-8 py-20 text-center opacity-30 italic font-black">Aún no tienes suscriptores.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

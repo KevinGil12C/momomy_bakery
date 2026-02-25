@@ -1,0 +1,80 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    {% include 'admin/partials/sidebar.twig' with {'active': 'news'} %}
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [{label: 'Noticias', url: '#'}]} %}
+
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="mb-12 flex justify-between items-end">
+                <div>
+                    <h2 class="text-4xl font-black text-slate-900 dark:text-white tracking-tighter italic">Novedades Dulces</h2>
+                    <p class="text-slate-500 font-medium">Gestiona las noticias que aparecen en el portal</p>
+                </div>
+                <a href="{{ base_url }}admin/news/create" class="bg-primary text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                    <span class="material-symbols-outlined">add</span> NUEVA NOTICIA
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for item in news %}
+                <div class="glass rounded-[3rem] overflow-hidden border border-white/20 shadow-2xl flex flex-col group">
+                    <div class="aspect-video relative overflow-hidden">
+                        <img src="{{ item.image_url|default('https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&q=80&w=800') }}" 
+                             class="size-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ item.title }}">
+                        <div class="absolute top-4 right-4">
+                            <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl {{ item.is_published ? 'bg-emerald-500 text-white' : 'bg-slate-500 text-white' }}">
+                                {{ item.is_published ? 'Publicado' : 'Borrador' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex-1 flex flex-col gap-4">
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white line-clamp-2 tracking-tight italic">{{ item.title }}</h3>
+                        <p class="text-sm text-slate-500 line-clamp-3 font-medium">{{ item.content|striptags }}</p>
+                        <div class="mt-auto pt-6 flex items-center justify-between border-t border-slate-100 dark:border-white/5">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ item.created_at|date('d M, Y') }}</span>
+                            <div class="flex gap-2">
+                                <a href="{{ base_url }}admin/news/edit/{{ item.id }}" class="size-10 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 flex items-center justify-center hover:text-primary hover:bg-primary/10 transition-all">
+                                    <span class="material-symbols-outlined text-xl">edit</span>
+                                </a>
+                                <button onclick="confirmDelete({{ item.id }})" class="size-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-500 flex items-center justify-center hover:scale-110 transition-all">
+                                    <span class="material-symbols-outlined text-xl">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-full py-40 text-center glass rounded-[4rem] border-2 border-dashed border-slate-200 dark:border-white/5">
+                    <span class="material-symbols-outlined text-6xl text-slate-200 mb-6 italic">newspaper</span>
+                    <p class="text-slate-400 font-bold italic">No has redactado ninguna noticia aún.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% include 'common/pagination.twig' with {'pager': pager} %}
+        </div>
+    </main>
+</div>
+
+<script>
+    function confirmDelete(id) {
+        Swal.fire({
+            title: '¿Eliminar noticia?',
+            text: "Esta acción no se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f0427c',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `{{ base_url }}admin/news/delete/${id}`;
+            }
+        })
+    }
+</script>
+{% endblock %}

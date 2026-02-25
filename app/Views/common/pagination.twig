@@ -1,0 +1,32 @@
+{% if pager.total_pages > 1 %}
+<nav class="flex items-center justify-center gap-2 mt-12 mb-8">
+    {# Previous Page #}
+    {% if pager.current_page > 1 %}
+    <a href="?page={{ pager.current_page - 1 }}{{ extra_params }}" class="size-12 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-white/5 text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm">
+        <span class="material-symbols-outlined">chevron_left</span>
+    </a>
+    {% endif %}
+
+    {# Page Numbers #}
+    <div class="flex items-center gap-2">
+        {% for page in 1..pager.total_pages %}
+            {% if page == pager.current_page %}
+                <span class="size-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black shadow-lg shadow-primary/20 cursor-default">
+                    {{ page }}
+                </span>
+            {% else %}
+                <a href="?page={{ page }}{{ extra_params }}" class="size-12 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-white/5 text-slate-600 dark:text-slate-300 font-bold hover:border-primary hover:text-primary transition-all shadow-sm">
+                    {{ page }}
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {# Next Page #}
+    {% if pager.current_page < pager.total_pages %}
+    <a href="?page={{ pager.current_page + 1 }}{{ extra_params }}" class="size-12 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-white/5 text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm">
+        <span class="material-symbols-outlined">chevron_right</span>
+    </a>
+    {% endif %}
+</nav>
+{% endif %}

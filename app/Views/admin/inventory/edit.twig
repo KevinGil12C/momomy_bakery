@@ -49,6 +49,40 @@
                                         placeholder="Ej: Pastel de Chocolate Supremo">
                                 </div>
 
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="flex items-center gap-4 bg-emerald-50 dark:bg-emerald-500/5 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-500/10">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="is_specialty" class="sr-only peer" {{ product.is_specialty ? 'checked' : '' }}>
+                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                                        </label>
+                                        <div>
+                                            <p class="text-[11px] font-black uppercase tracking-tighter text-emerald-600">Es Especialidad</p>
+                                            <p class="text-[10px] text-slate-500">Aparecerá destacado en la home.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4 bg-amber-50 dark:bg-amber-500/5 p-4 rounded-2xl border border-amber-100 dark:border-amber-500/10">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="is_special_of_week" class="sr-only peer" {{ product.is_special_of_week ? 'checked' : '' }}>
+                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
+                                        </label>
+                                        <div>
+                                            <p class="text-[11px] font-black uppercase tracking-tighter text-amber-600">Especial Semanal</p>
+                                            <p class="text-[10px] text-slate-500">Se mostrará en el banner principal.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-4 bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="is_active" class="sr-only peer" {{ product.is_active or not product ? 'checked' : '' }}>
+                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                    </label>
+                                    <div>
+                                        <p class="text-sm font-bold">Mostrar en la página pública</p>
+                                        <p class="text-[10px] text-slate-500">Si se desactiva, el producto no aparecerá en el menú del sitio web.</p>
+                                    </div>
+                                </div>
+
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Precio ($)</label>
@@ -76,10 +110,25 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Descripción</label>
-                                    <textarea name="description" rows="4"
+                                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Descripción Corta</label>
+                                    <textarea name="description" rows="3"
                                         class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none"
-                                        placeholder="Características del postre...">{{ product.description }}</textarea>
+                                        placeholder="Descripción rápida para el catálogo...">{{ product.description }}</textarea>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Ingredientes</label>
+                                        <textarea name="ingredients" rows="4"
+                                            class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none"
+                                            placeholder="Harina, chocolate, amor...">{{ product.ingredients }}</textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Características</label>
+                                        <textarea name="characteristics" rows="4"
+                                            class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none"
+                                            placeholder="Sin gluten, Vegano, Extra dulce...">{{ product.characteristics }}</textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>

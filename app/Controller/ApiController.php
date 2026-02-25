@@ -17,6 +17,18 @@ class ApiController extends Controller
     }
 
     /**
+     * Get all active products for the public site
+     */
+    public function products()
+    {
+        $products = $this->db->getJoin('products', 'products.*, categories.name as category', [
+            ['table' => 'categories', 'on' => 'products.category_id = categories.id']
+        ], ['is_active' => 1]);
+
+        return $this->jsonResponse($products);
+    }
+
+    /**
      * Endpoint to receive a contact request from External Front (Vercel)
      */
     public function receiveContact()
@@ -48,7 +60,7 @@ class ApiController extends Controller
     }
 
     /**
-     * Receive an order request from Vercel
+     * Process an order submitted from the public front-end
      */
     public function receiveOrder()
     {
@@ -66,10 +78,11 @@ class ApiController extends Controller
             'customer_phone'      => $data['customer_phone'] ?? '',
             'total_amount'        => $data['total_amount'] ?? 0,
             'status'              => 'pending',
-            'notes'               => $data['notes'] ?? ''
+            'notes'               => $data['notes'] ?? '',
+            'tracking_token'      => bin2hex(random_bytes(16))
         ];
 
-        $orderId = $this->db->insert('orders', $orderData);
+        $this->db->insert('orders', $orderData);
         $orderId = $this->db->lastInsertId();
 
         // 2. Insert Items
@@ -88,7 +101,7 @@ class ApiController extends Controller
         $email = new EmailService();
         $customerName = $orderData['customer_first_name'] . ' ' . $orderData['customer_last_name'];
         $email->send(
-            'admin@momomy.com', // Change to your dynamic admin email if needed
+            'admin@momomy.com',
             'Nuevo Pedido - Momomy Bakery',
             "Se ha recibido un nuevo pedido #$orderId de {$customerName}. Revisa el panel administrativo para procesarlo."
         );
@@ -97,51 +110,49 @@ class ApiController extends Controller
     }
 
     /**
-     * Generate a recovery token for an email
+     * Submit a contact request (local)
      */
-    public function recovery()
+    public function contact()
     {
-        $email = $_POST['email'] ?? null;
-        if (!$email) return $this->jsonResponse(['error' => 'Email required'], 400);
-
-        $jwt = new JwtService();
-        $token = $jwt->generateToken(['email' => $email], 1800); // 30 mins
-
-        // In a real app, send this via EmailService
-        return $this->jsonResponse([
-            'message' => 'Token generated',
-            'token' => $token
+        $this->db->insert('contacts', [
+            'name'    => $_POST['name'],
+            'email'   => $_POST['email'],
+            'message' => $_POST['message']
         ]);
+        return $this->jsonResponse(['success' => true]);
     }
 
     /**
-     * Public endpoint to check order status
+     * Submit a quotation request (local)
      */
-    public function orderStatus($orderId)
-    {
-        $order = $this->db->getOne('orders', ['id' => $orderId]);
-        if (!$order) {
-            die("Pedido no encontrado.");
-        }
-
-        $items = $this->db->getJoin('order_items', 'order_items.*, products.name as product_name', [
-            ['table' => 'products', 'on' => 'order_items.product_id = products.id']
-        ], ['order_id' => $orderId]);
-
-        $business = $this->db->getOne('business_settings', ['id' => 1]);
-
-        $this->showView('public/order_status.twig', [
-            'title'    => 'Estado de mi Pedido',
-            'order'    => $order,
-            'items'    => $items,
-            'business' => $business
-        ]);
-    }
-
     public function requestQuotation()
     {
-        $data = json_decode(file_get_contents('php://input'), true);
-        if (!$data) return $this->jsonResponse(['error' => 'Invalid data'], 400);
+        // Check if it's JSON or FormData
+        $raw = file_get_contents('php://input');
+        $data = json_decode($raw, true);
+
+        // If not JSON, use $_POST
+        if (!$data) {
+            $data = $_POST;
+        }
+
+        if (!$data) return $this->jsonResponse(['error' => 'No data received'], 400);
+
+        // Handle Reference Image
+        $imageUrl = null;
+        if (isset($_FILES['reference_image']) && $_FILES['reference_image']['error'] === UPLOAD_ERR_OK) {
+            $tmpPath = $_FILES['reference_image']['tmp_name'];
+            $filename = 'quote_' . time() . '_' . $_FILES['reference_image']['name'];
+            $uploadDir = __DIR__ . '/../../public/uploads/quotations/';
+
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            if (move_uploaded_file($tmpPath, $uploadDir . $filename)) {
+                $imageUrl = $this->baseUrl . 'public/uploads/quotations/' . $filename;
+            }
+        }
 
         $quotationData = [
             'customer_first_name' => $data['customer_first_name'] ?? '',
@@ -149,6 +160,7 @@ class ApiController extends Controller
             'customer_email'      => $data['customer_email'] ?? '',
             'subject'             => $data['subject'] ?? 'Petición de Cotización',
             'content'             => $data['content'] ?? '',
+            'reference_image'     => $imageUrl,
             'status'              => 'draft',
             'sent_at'             => date('Y-m-d H:i:s')
         ];
@@ -160,10 +172,70 @@ class ApiController extends Controller
         $email = new EmailService();
         $email->send(
             'admin@momomy.com',
-            'Nueva Petición de Cotización',
-            "Se ha recibido una petición de cotización #$id de {$quotationData['customer_first_name']}. Revisa el panel para completar y enviar el presupuesto."
+            'Nueva Cotización con Referencia #' . $id,
+            "Se ha recibido una petición de cotización de {$quotationData['customer_first_name']}. <br>" .
+                ($imageUrl ? "<b>Nota:</b> El cliente incluyó una imagen de referencia." : "")
         );
 
         return $this->jsonResponse(['message' => 'Quotation request received', 'id' => $id]);
+    }
+
+    public function getProductComments($productId)
+    {
+        $comments = $this->db->getJoin('product_comments', 'product_comments.*, customers.first_name, customers.last_name', [
+            ['table' => 'customers', 'on' => 'product_comments.user_id = customers.id']
+        ], ['product_id' => $productId], 'created_at DESC');
+
+        return $this->jsonResponse($comments);
+    }
+
+    public function postComment()
+    {
+        if (!isset($_SESSION['customer_id'])) {
+            return $this->jsonResponse(['error' => 'Inicia sesión para comentar'], 403);
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$data || !isset($data['product_id']) || !isset($data['comment'])) {
+            return $this->jsonResponse(['error' => 'Datos inválidos'], 400);
+        }
+
+        $commentData = [
+            'product_id'  => $data['product_id'],
+            'user_id'     => $_SESSION['customer_id'],
+            'comment'     => strip_tags($data['comment']),
+            'rating'      => (int)($data['rating'] ?? 5)
+        ];
+
+        $this->db->insert('product_comments', $commentData);
+        return $this->jsonResponse(['message' => 'Comentario publicado']);
+    }
+
+    public function subscribeNewsletter()
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $email = $data['email'] ?? '';
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->jsonResponse(['error' => 'Correo inválido'], 400);
+        }
+
+        try {
+            $this->db->insert('newsletter_subscribers', ['email' => $email]);
+            return $this->jsonResponse(['message' => '¡Te has suscrito con éxito! ✨']);
+        } catch (\PDOException $e) {
+            // Error 23000 is Duplicate Entry in MySQL
+            if ($e->getCode() == 23000) {
+                return $this->jsonResponse(['message' => 'Ya estás suscrito, ¡gracias! 💖']);
+            }
+            return $this->jsonResponse(['error' => 'Error al suscribirse'], 500);
+        }
+    }
+
+    public function getSubscribers()
+    {
+        // Solo para admin si se requiere, pero aquí devolvemos lista para que el admin la use
+        $subscribers = $this->db->getAll('newsletter_subscribers', [], 'created_at DESC');
+        return $this->jsonResponse($subscribers);
     }
 }

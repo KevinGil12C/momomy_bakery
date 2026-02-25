@@ -23,7 +23,7 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        if (isset($_SESSION['user_id'])) {
+        if (isset($_SESSION['user_id']) && $_SESSION['user_role'] === 'admin') {
             $this->redirect('admin/dashboard');
         }
         $this->showView('admin/auth/login.twig', [
@@ -39,33 +39,42 @@ class AuthController extends Controller
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        $user = $this->db->getOne('users', ['email' => $email]);
+        $results = $this->db->rawQuery("SELECT users.*, roles.name as role 
+                                        FROM users 
+                                        JOIN roles ON users.role_id = roles.id 
+                                        WHERE users.email = :email LIMIT 1", [':email' => $email]);
+        $user = $results[0] ?? null;
 
-        if ($user && password_verify($password, $user->password)) {
+        if ($user && password_verify($password, $user['password'])) {
             // Check if 2FA is needed
-            if ($user->role === 'admin') {
-                $_SESSION['pending_2fa_user'] = $user->id;
+            if ($user['role'] === 'admin' && $user['is_2fa_enabled'] == 1) {
+                $_SESSION['pending_2fa_user'] = $user['id'];
 
                 // Generate and send 2FA code
                 $tfa = new TwoFactorService();
                 $code = $tfa->generateCode();
-                $tfa->storeCode($user->id, $code);
+                $tfa->storeCode($user['id'], $code);
 
                 // SEND REAL EMAIL
                 $emailService = new \App\Services\EmailService();
                 $emailService->send(
-                    $user->email,
+                    $user['email'],
                     "Código de Seguridad - Momomy Bakery",
-                    "Hola {$user->first_name}, tu código de acceso al sistema es: <b>$code</b>. Este código expira en 10 minutos."
+                    "Hola {$user['first_name']}, tu código de acceso al sistema es: <b>$code</b>. Este código expira en 10 minutos."
                 );
 
                 $this->redirect('admin/2fa');
-            } else {
-                $_SESSION['user_id'] = $user->id;
-                $_SESSION['user_role'] = $user->role;
-                $_SESSION['user_name'] = $user->first_name . ' ' . $user->last_name;
-                $_SESSION['user_avatar'] = $user->avatar_url;
+            } elseif ($user['role'] === 'admin') {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_role'] = $user['role'];
+                $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+                $_SESSION['user_avatar'] = $user['avatar_url'];
                 $this->redirect('admin/dashboard');
+            } else {
+                $this->showView('admin/auth/login.twig', [
+                    'error' => 'Acceso denegado. Esta cuenta no tiene permisos de administrador.',
+                    'email' => $email
+                ]);
             }
         } else {
             $this->showView('admin/auth/login.twig', [
@@ -99,12 +108,16 @@ class AuthController extends Controller
         // UNIVERSAL DEV CODE: 111111
         if ($tfa->validateCode($code) || $code === '111111') {
             $userId = $_SESSION['pending_2fa_user'];
-            $user = $this->db->getOne('users', ['id' => $userId]);
+            $results = $this->db->rawQuery("SELECT users.*, roles.name as role 
+                                            FROM users 
+                                            JOIN roles ON users.role_id = roles.id 
+                                            WHERE users.id = :id LIMIT 1", [':id' => $userId]);
+            $user = $results[0] ?? null;
 
-            $_SESSION['user_id'] = $user->id;
-            $_SESSION['user_role'] = $user->role;
-            $_SESSION['user_name'] = $user->first_name . ' ' . $user->last_name;
-            $_SESSION['user_avatar'] = $user->avatar_url;
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_role'] = $user['role'];
+            $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+            $_SESSION['user_avatar'] = $user['avatar_url'];
             unset($_SESSION['pending_2fa_user']);
 
             $this->redirect('admin/dashboard');

@@ -1,0 +1,242 @@
+{% extends "public/layout.twig" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 lg:px-20 py-12">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-12">
+        <a href="{{ base_url }}" class="hover:text-primary transition-colors">Inicio</a>
+        <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+        <a href="{{ base_url }}catalog" class="hover:text-primary transition-colors">Catálogo</a>
+        <span class="material-symbols-outlined text-[10px]">chevron_right</span>
+        <span class="text-slate-900 dark:text-white">{{ product.category_name }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+        <!-- Left: Image Gallery (Amazon Style) -->
+        <div class="lg:col-span-6 space-y-6">
+            <div class="aspect-square rounded-[3rem] overflow-hidden bg-white dark:bg-slate-800 border border-primary/5 shadow-2xl relative group">
+                <img src="{{ product.image_url }}" 
+                     alt="{{ product.name }}" 
+                     class="size-full object-cover group-hover:scale-105 transition-transform duration-700" id="main-product-img">
+                <div class="absolute top-6 left-6">
+                    <span class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-black text-primary border border-white/50 shadow-xl uppercase tracking-tighter">
+                        {{ product.category_name }}
+                    </span>
+                </div>
+            </div>
+            <!-- Dynamic Micro-Gallery placeholder (for later expansion) -->
+            <div class="flex gap-4">
+                <div class="size-24 rounded-2xl overflow-hidden border-2 border-primary shadow-lg cursor-pointer">
+                    <img src="{{ product.image_url|default(base_url ~ 'public/uploads/products/placeholder.png') }}" class="size-full object-cover">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Purchase Sidebar (Amazon Style) -->
+        <div class="lg:col-span-6 space-y-10">
+            <div class="space-y-4">
+                <h1 class="text-5xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter italic">{{ product.name }}</h1>
+                <div class="flex items-center gap-6">
+                    <div class="flex text-amber-400">
+                        {% for i in 1..5 %}
+                        <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' {{ i <= product.avg_rating ? 1 : 0 }}">star</span>
+                        {% endfor %}
+                    </div>
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest font-bold">{{ product.total_reviews }} Valoraciones ({{ product.avg_rating }})</span>
+                </div>
+            </div>
+
+            <div class="pb-10 border-b border-slate-100 dark:border-white/5">
+                <p class="text-5xl font-black text-primary tracking-tighter">${{ product.price|number_format(2) }}</p>
+                <p class="text-xs font-bold text-slate-400 mt-2 uppercase">Iva incluido / Envío se calcula al finalizar</p>
+            </div>
+
+            <!-- Amazon Style Feature List -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-2">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">nutrition</span> Ingredientes Principales
+                    </h4>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                        {{ product.ingredients|default('Información detallada en camino ✨') }}
+                    </p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">auto_awesome</span> Características
+                    </h4>
+                    <div class="flex flex-wrap gap-2">
+                        {% for char in (product.characteristics|default('Artesanal, Fresco')|split(',')) %}
+                        <span class="px-3 py-1.5 rounded-xl bg-primary/5 text-primary text-[10px] font-black uppercase tracking-tighter">
+                            {{ char|trim }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">info</span> Sobre este postre
+                    </h4>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium leading-relaxed italic">
+                        {{ product.description }}
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-black dark:text-white uppercase tracking-widest">Disponibilidad</span>
+                        <span class="px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase">Stock: {{ product.stock }} unidades</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center bg-white dark:bg-slate-700 rounded-3xl p-1 border border-slate-100 dark:border-white/10">
+                            <button onclick="const i = document.getElementById('prod-qty'); if(i.value > 1) i.value--" class="size-12 flex items-center justify-center font-black hover:text-primary">-</button>
+                            <input type="number" id="prod-qty" value="1" min="1" max="{{ product.stock }}" class="w-16 bg-transparent border-none text-center font-black focus:ring-0 dark:text-white">
+                            <button onclick="const i = document.getElementById('prod-qty'); i.value++" class="size-12 flex items-center justify-center font-black hover:text-primary">+</button>
+                        </div>
+                        <button onclick="const q = document.getElementById('prod-qty'); addToCart({id: {{ product.id }}, name: '{{ product.name }}', price: {{ product.price }}, img: '{{ product.image_url }}', qty: parseInt(q.value)})" 
+                                class="flex-1 bg-slate-900 dark:bg-primary text-white py-6 rounded-3xl font-black text-xl flex items-center justify-center gap-4 shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all">
+                            <span class="material-symbols-outlined font-black">shopping_basket</span>
+                            AÑADIR A MI PEDIDO
+                        </button>
+                    </div>
+                    
+                    <button onclick="window.history.back()" class="w-full bg-white dark:bg-slate-800 text-slate-400 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:text-primary transition-colors">
+                        ← Seguir Antojándose
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Separated Comments Section -->
+    <div class="mt-24 pt-24 border-t border-slate-100 dark:border-white/5">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-black text-slate-900 dark:text-white mb-12 tracking-tighter italic flex items-center gap-4">
+                <span class="size-16 rounded-[2rem] bg-primary/10 text-primary flex items-center justify-center text-3xl">
+                    <span class="material-symbols-outlined">forum</span>
+                </span>
+                Opiniones Reales
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-16">
+                <!-- Left: Comment Submission -->
+                <div class="md:col-span-5 space-y-8">
+                    <div class="glass p-8 rounded-[3rem] border border-primary/5 shadow-2xl sticky top-24">
+                        <h3 class="text-lg font-black dark:text-white mb-2">Cuéntanos tu experiencia</h3>
+                        <p class="text-xs text-slate-500 font-medium mb-8 italic">Tu opinión nos ayuda a perfeccionar la magia.</p>
+                        
+                        {% if session.customer_id %}
+                        <!-- Post Comment Form -->
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4 mb-4">
+                                <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Tu Calificación:</span>
+                                <div class="flex gap-1" id="star-selector">
+                                    {% for i in 1..5 %}
+                                    <button onclick="setRating({{ i }})" data-val="{{ i }}" class="star-btn material-symbols-outlined text-amber-400 hover:scale-125 transition-transform" style="font-variation-settings: 'FILL' 1">star</button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <textarea id="comment-text" placeholder="¿Qué te pareció este postre? ✨" 
+                                      class="w-full bg-slate-50 dark:bg-white/5 border-none rounded-[2rem] p-6 focus:ring-2 focus:ring-primary min-h-[120px] font-medium text-sm"></textarea>
+                            <button onclick="submitComment()" class="w-full py-4 bg-slate-900 dark:bg-slate-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary transition-all">Publicar Reseña</button>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
+                            <p class="text-xs font-bold text-slate-400 mb-4 uppercase">Inicia sesión para comentar</p>
+                            <a href="{{ base_url }}connect/login" class="inline-block px-6 py-3 bg-slate-900 dark:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-colors">ACCEDER</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Right: Comments Feed -->
+                <div class="md:col-span-7 space-y-8">
+                    {% for comment in comments %}
+                    <div class="bg-white dark:bg-slate-800/50 p-8 rounded-[2.5rem] border border-primary/5 shadow-sm hover:shadow-xl transition-all">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm italic">
+                                    {{ comment.first_name[0] }}{{ comment.last_name[0] }}
+                                </div>
+                                <div>
+                                    <h5 class="font-black text-sm text-slate-900 dark:text-white tracking-tight uppercase">{{ comment.first_name }} {{ comment.last_name }}</h5>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ comment.created_at|date('d M Y') }}</p>
+                                </div>
+                            </div>
+                            <div class="flex text-primary">
+                                {% for i in 1..5 %}
+                                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ i <= comment.rating ? 1 : 0 }}">star</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-400 font-medium italic leading-relaxed">
+                             "{{ comment.comment }}"
+                        </p>
+                    </div>
+                    {% else %}
+                    <div class="p-20 text-center glass rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-white/5">
+                        <span class="material-symbols-outlined text-6xl text-slate-200 mb-4">rate_review</span>
+                        <p class="text-slate-400 font-bold italic">Nadie ha comentado este postre aún. ¡Estrena esta sección!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentRating = 5;
+    const currentProductId = {{ product.id }};
+
+    function setRating(val) {
+        currentRating = val;
+        document.querySelectorAll('.star-btn').forEach(btn => {
+            if (parseInt(btn.dataset.val) <= val) {
+                btn.style.fontVariationSettings = "'FILL' 1";
+                btn.classList.add('scale-110');
+            } else {
+                btn.style.fontVariationSettings = "'FILL' 0";
+                btn.classList.remove('scale-110');
+            }
+        });
+    }
+
+    async function submitComment() {
+        const text = document.getElementById('comment-text').value;
+        if (!text.trim()) return Swal.fire('Error', 'Escribe algo primero ✨', 'warning');
+
+        try {
+            const resp = await fetch('{{ base_url }}api/product/comment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: currentProductId,
+                    comment: text,
+                    rating: currentRating
+                })
+            });
+
+            const res = await resp.json();
+            if (res.message) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Gracias!',
+                    text: 'Tu opinión es muy valiosa para nosotros.',
+                    timer: 3000
+                }).then(() => location.reload());
+            } else {
+                Swal.fire('Error', res.error || 'No se pudo publicar', 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Problema de conexión 🍰', 'error');
+        }
+    }
+</script>
+{% endblock %}
