@@ -41,6 +41,7 @@ $router->get('/catalog', [PublicController::class, 'catalog']);
 $router->get('/product/(\d+)', [PublicController::class, 'product']);
 $router->get('/contact', [PublicController::class, 'contact']);
 $router->get('/quotation', [PublicController::class, 'quotation']);
+$router->get('/quotation/([a-zA-Z0-9]+)', [PublicController::class, 'viewQuotation']);
 $router->get('/privacy', [PublicController::class, 'privacy']);
 $router->get('/terms', [PublicController::class, 'terms']);
 
@@ -104,10 +105,15 @@ $router->get('/admin/quotations/create', [AdminController::class, 'createQuotati
 $router->post('/admin/quotations/store', [AdminController::class, 'storeQuotation']);
 $router->get('/admin/quotations/download/(:any)', [AdminController::class, 'downloadQuotation']);
 
-// User Management & Profile
 $router->get('/admin/users', [AdminController::class, 'users']);
 $router->get('/admin/users/create', [AdminController::class, 'createUser']);
 $router->post('/admin/users/store', [AdminController::class, 'storeUser']);
+
+// Customers Management
+$router->get('/admin/customers', [AdminController::class, 'customers']);
+$router->get('/admin/customers/edit/(:any)', [AdminController::class, 'editCustomer']);
+$router->post('/admin/customers/update/(:any)', [AdminController::class, 'updateCustomer']);
+$router->get('/admin/customers/delete/(:any)', [AdminController::class, 'deleteCustomer']);
 $router->get('/admin/profile', [AdminController::class, 'profile']);
 $router->post('/admin/profile/update', [AdminController::class, 'updateProfile']);
 $router->get('/admin/settings', [AdminController::class, 'settings']);

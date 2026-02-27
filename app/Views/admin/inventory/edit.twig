@@ -1,161 +1,352 @@
 {% extends "admin/layout.twig" %}
 
 {% block body %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
 <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     {% include 'admin/partials/sidebar.twig' with {'active': 'inventory'} %}
 
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <!-- Decoration Background -->
+        <div class="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
+
         <!-- Header -->
         {% include 'admin/partials/header.twig' with {'breadcrumbs': [
             {label: 'Inventario', url: 'admin/inventory'},
-            {label: (product ? 'Editar' : 'Nuevo'), url: '#'}
+            {label: (product ? 'Editar Postre' : 'Nuevo Postre'), url: '#'}
         ]} %}
 
-        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
-            <div class="mb-8">
-                <h2 class="text-3xl font-black text-slate-900 dark:text-white">{% if product %}Editar{% else %}Nuevo{% endif %} Postre</h2>
-                <p class="text-slate-500 text-sm font-medium">Completa los detalles del producto</p>
-            </div>
-            <form action="{{ base_url }}admin/inventory/{% if product %}update/{{ product.id }}{% else %}store{% endif %}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto space-y-8">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Image Upload -->
-                    <div class="lg:col-span-1">
-                        <div class="glass p-6 rounded-[2.5rem] border border-white/20 shadow-2xl text-center">
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-6 px-1">Foto del Postre</h3>
-                            <div class="relative group cursor-pointer aspect-square rounded-[2rem] overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-white/10 hover:border-primary transition-all">
-                                {% if product.image_url %}
-                                <img src="{{ product.image_url }}" id="preview" class="w-full h-full object-cover">
-                                {% else %}
-                                <span class="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary transition-colors">add_a_photo</span>
-                                <img id="preview" class="w-full h-full object-cover hidden">
-                                {% endif %}
-                                <input type="file" name="image" id="image-input" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
-                            </div>
-                            <p class="mt-4 text-xs text-slate-500">Haz clic para subir una imagen (JPG, PNG)</p>
-                        </div>
-                    </div>
-
-                    <!-- Details -->
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl">
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Nombre del Postre</label>
-                                    <input type="text" name="name" value="{{ product.name }}" required
-                                        class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm"
-                                        placeholder="Ej: Pastel de Chocolate Supremo">
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="flex items-center gap-4 bg-emerald-50 dark:bg-emerald-500/5 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-500/10">
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="is_specialty" class="sr-only peer" {{ product.is_specialty ? 'checked' : '' }}>
-                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
-                                        </label>
-                                        <div>
-                                            <p class="text-[11px] font-black uppercase tracking-tighter text-emerald-600">Es Especialidad</p>
-                                            <p class="text-[10px] text-slate-500">Aparecerá destacado en la home.</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-4 bg-amber-50 dark:bg-amber-500/5 p-4 rounded-2xl border border-amber-100 dark:border-amber-500/10">
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="is_special_of_week" class="sr-only peer" {{ product.is_special_of_week ? 'checked' : '' }}>
-                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
-                                        </label>
-                                        <div>
-                                            <p class="text-[11px] font-black uppercase tracking-tighter text-amber-600">Especial Semanal</p>
-                                            <p class="text-[10px] text-slate-500">Se mostrará en el banner principal.</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center gap-4 bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10">
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" name="is_active" class="sr-only peer" {{ product.is_active or not product ? 'checked' : '' }}>
-                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                                    </label>
-                                    <div>
-                                        <p class="text-sm font-bold">Mostrar en la página pública</p>
-                                        <p class="text-[10px] text-slate-500">Si se desactiva, el producto no aparecerá en el menú del sitio web.</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Precio ($)</label>
-                                        <input type="number" name="price" value="{{ product.price }}" step="0.01" required
-                                            class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm"
-                                            placeholder="0.00">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Stock Inicial</label>
-                                        <input type="number" name="stock" value="{{ product.stock|default(0) }}" required
-                                            class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm"
-                                            placeholder="0">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Categoría</label>
-                                    <select name="category_id" required
-                                        class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm appearance-none">
-                                        <option value="">Seleccionar categoría...</option>
-                                        {% for category in categories %}
-                                        <option value="{{ category.id }}" {{ product.category_id == category.id ? 'selected' : '' }}>{{ category.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Descripción Corta</label>
-                                    <textarea name="description" rows="3"
-                                        class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none"
-                                        placeholder="Descripción rápida para el catálogo...">{{ product.description }}</textarea>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Ingredientes</label>
-                                        <textarea name="ingredients" rows="4"
-                                            class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none"
-                                            placeholder="Harina, chocolate, amor...">{{ product.ingredients }}</textarea>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Características</label>
-                                        <textarea name="characteristics" rows="4"
-                                            class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none"
-                                            placeholder="Sin gluten, Vegano, Extra dulce...">{{ product.characteristics }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <button type="submit" class="flex-1 bg-primary text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:scale-[1.02] transition-transform">
-                                <span class="material-symbols-outlined">save</span> Guardar Postre
-                            </button>
-                            <a href="{{ base_url }}admin/inventory" class="flex-1 bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 py-4 rounded-2xl font-bold flex items-center justify-center hover:bg-slate-300 transition-all">
-                                Cancelar
-                            </a>
-                        </div>
+        <div class="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar relative">
+            <div class="max-w-5xl mx-auto">
+                <div class="mb-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-900 dark:text-white">{% if product %}Editar{% else %}Nuevo{% endif %} Postre</h2>
+                        <p class="text-slate-500 text-sm font-medium mt-1">Completa los detalles de este producto de inventario</p>
                     </div>
                 </div>
-            </form>
+
+                <form action="{{ base_url }}admin/inventory/{% if product %}update/{{ product.id }}{% else %}store{% endif %}" method="POST" enctype="multipart/form-data" class="space-y-8 relative">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="cropped_image" id="cropped_image_input" value="">
+
+                    <!-- Full Width Image Upload Section -->
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl space-y-4">
+                        <h4 class="text-lg font-bold flex items-center gap-2 text-primary">
+                            <span class="material-symbols-outlined">image</span> Fotografía Oficial del Producto
+                        </h4>
+                        
+                        <!-- Drag and Drop Zone Full Width -->
+                        <div class="relative group cursor-pointer" id="drop-zone" onclick="document.getElementById('image-input').click()"
+                             ondragover="event.preventDefault(); this.classList.add('scale-[1.01]', 'border-primary', 'bg-primary/5')"
+                             ondragleave="event.preventDefault(); this.classList.remove('scale-[1.01]', 'border-primary', 'bg-primary/5')"
+                             ondrop="handleDrop(event)">
+                            
+                            <input type="file" id="image-input" name="image" accept="image/*" class="hidden" onchange="openCropperMenu(this)">
+                            
+                            <!-- Preview Container -->
+                            <div id="logo-preview-container" class="w-full h-64 sm:h-80 md:h-96 rounded-3xl border-2 border-dashed border-primary/20 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 transition-all overflow-hidden relative group-hover:border-primary/50 group-hover:bg-primary/5 shadow-inner">
+                                <img src="{{ product.image_url|default('') }}" id="preview-img" class="absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-300 {{ product.image_url ? '' : 'hidden' }} group-hover:opacity-40" />
+                                
+                                <div id="upload-placeholder" class="text-center z-10 p-6 flex flex-col items-center justify-center transition-all duration-300 {{ product.image_url ? 'hidden' : '' }}">
+                                    <div class="size-20 rounded-[1.5rem] bg-white dark:bg-slate-700 text-primary flex items-center justify-center mb-4 group-hover:-translate-y-2 transition-transform shadow-xl shadow-primary/10 mx-auto">
+                                        <span class="material-symbols-outlined text-4xl font-light">add_a_photo</span>
+                                    </div>
+                                    <p class="font-black text-slate-700 dark:text-slate-300 text-lg">Arrastra tu foto espectacular aquí o <span class="text-primary italic">selecciona archivo</span></p>
+                                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">Formatos permitidos: PNG, JPG, WEBP (Max 5MB)</p>
+                                </div>
+
+                                <div id="change-overlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-20 items-center justify-center opacity-0 transition-opacity duration-300 flex {{ product.image_url ? 'group-hover:opacity-100' : 'hidden' }}">
+                                    <div class="flex flex-col items-center transform translate-y-4 group-hover:translate-y-0 transition-transform">
+                                        <span class="material-symbols-outlined text-5xl text-white mb-2 font-light">crop</span>
+                                        <span class="text-white font-black text-sm tracking-widest uppercase mt-2">Cambiar / Recortar Foto</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Section -->
+                    <div class="glass p-8 rounded-[2.5rem] border border-white/20 shadow-2xl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Nombre del Postre <span class="text-rose-500">*</span></label>
+                                <input type="text" name="name" value="{{ product.name }}" required
+                                    class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300 text-lg"
+                                    placeholder="Ej: Pastel de Chocolate Supremo">
+                            </div>
+
+                            <div class="flex items-start gap-4 bg-emerald-50 dark:bg-emerald-500/5 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-500/10">
+                                <label class="relative inline-flex items-center cursor-pointer mt-1">
+                                    <input type="checkbox" name="is_specialty" class="sr-only peer" {{ product.is_specialty ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                                </label>
+                                <div>
+                                    <p class="text-sm font-black uppercase tracking-tighter text-emerald-600">Es Especialidad</p>
+                                    <p class="text-xs text-slate-500 mt-1 leading-snug">Se exhibe como producto "Estrella" de la casa y aparece destacado en la página de inicio.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4 bg-amber-50 dark:bg-amber-500/5 p-5 rounded-2xl border border-amber-100 dark:border-amber-500/10">
+                                <label class="relative inline-flex items-center cursor-pointer mt-1">
+                                    <input type="checkbox" name="is_special_of_week" class="sr-only peer" {{ product.is_special_of_week ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
+                                </label>
+                                <div>
+                                    <p class="text-sm font-black uppercase tracking-tighter text-amber-600">Especial de la Semana</p>
+                                    <p class="text-xs text-slate-500 mt-1 leading-snug">Ideal para la promoción actual. Se mostrará en los banners gigantes en primera plana.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4 bg-slate-50 dark:bg-white/5 p-5 rounded-2xl border border-slate-100 dark:border-white/10 md:col-span-2">
+                                <label class="relative inline-flex items-center cursor-pointer mt-1">
+                                    <input type="checkbox" name="is_active" class="sr-only peer" {{ product.is_active or not product ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                </label>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Mostrar en Catálogo Público</p>
+                                    <p class="text-xs text-slate-500 mt-1 leading-snug">Si se desactiva, el producto permanecerá en tu sistema como borrador, pero nadie podrá verlo ni comprarlo desde la web principal.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-8 border-t border-slate-100 dark:border-white/5 pt-8">
+                            <div>
+                                <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Precio ($) <span class="text-rose-500">*</span></label>
+                                <input type="number" name="price" value="{{ product.price }}" step="0.01" required
+                                    class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-bold text-primary placeholder:text-slate-300"
+                                    placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Stock Inicial</label>
+                                <input type="number" name="stock" value="{{ product.stock|default(0) }}" required
+                                    class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-bold placeholder:text-slate-300"
+                                    placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Categoría <span class="text-rose-500">*</span></label>
+                                <select name="category_id" required
+                                    class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium appearance-none">
+                                    <option value="" class="text-slate-400">Seleccionar categoría...</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" {{ product.category_id == category.id ? 'selected' : '' }}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Descripción Corta</label>
+                                <textarea name="description" rows="3"
+                                    class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300 resize-none"
+                                    placeholder="Párrafo inicial cautivador para la ficha técnica del producto...">{{ product.description }}</textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Lista de Ingredientes</label>
+                                    <textarea name="ingredients" rows="4"
+                                        class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300 resize-none"
+                                        placeholder="Harina de trigo premium, cacao orgánico, etc...">{{ product.ingredients }}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Características Especiales</label>
+                                    <textarea name="characteristics" rows="4"
+                                        class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300 resize-none"
+                                        placeholder="100% Sin Gluten, Apto para veganos, etc...">{{ product.characteristics }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-8 mt-8 border-t border-slate-100 dark:border-slate-800">
+                            <a href="{{ base_url }}admin/inventory" class="text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined">close</span> Cancelar
+                            </a>
+                            <button type="submit" class="bg-primary text-white px-8 md:px-12 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[1.2rem]">save</span> {% if product %}Guardar Cambios{% else %}Agregar Postre{% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
         </div>
     </main>
 </div>
 
+<!-- CROPPER MODAL -->
+<div id="cropper-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md hidden items-center justify-center p-4 lg:p-12 transition-all">
+    <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] w-full max-w-5xl max-h-full flex flex-col overflow-hidden shadow-2xl relative">
+        <div class="p-6 lg:p-8 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 z-10">
+            <h3 class="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-3xl">crop</span>
+                Recortar & Ajustar Fotografía
+            </h3>
+            <button onclick="closeCropperModal()" class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-inner focus:outline-none">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-hidden relative min-h-[400px] lg:min-h-[500px] bg-slate-900/5">
+            <!-- Loading indicator -->
+            <div id="cropper-loader" class="absolute inset-0 flex flex-col items-center justify-center text-primary z-20 hidden backdrop-blur bg-white/50 dark:bg-slate-900/50">
+                <span class="material-symbols-outlined text-5xl animate-spin mb-4">progress_activity</span>
+                <span class="font-bold tracking-widest uppercase text-sm">Procesando Imagen...</span>
+            </div>
+            
+            <img id="cropper-image" src="" alt="Picture" class="max-w-full opacity-0 transition-opacity duration-300">
+        </div>
+        
+        <div class="p-6 lg:p-8 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div class="flex flex-wrap items-center gap-2">
+                <p class="text-xs uppercase tracking-widest font-black text-slate-400 mr-2 w-full sm:w-auto text-center sm:text-left">Herramientas:</p>
+                <div class="flex bg-slate-200 dark:bg-slate-700 rounded-full p-1 shadow-inner">
+                    <button onclick="cropper.zoom(0.1)" title="Acercar" class="size-10 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors shadow-sm"><span class="material-symbols-outlined text-sm">zoom_in</span></button>
+                    <button onclick="cropper.zoom(-0.1)" title="Alejar" class="size-10 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors shadow-sm"><span class="material-symbols-outlined text-sm">zoom_out</span></button>
+                </div>
+                <div class="flex bg-slate-200 dark:bg-slate-700 rounded-full p-1 shadow-inner">
+                    <button onclick="cropper.rotate(-90)" title="Girar Izquierda" class="size-10 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors shadow-sm"><span class="material-symbols-outlined text-sm">rotate_left</span></button>
+                    <button onclick="cropper.rotate(90)" title="Girar Derecha" class="size-10 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors shadow-sm"><span class="material-symbols-outlined text-sm">rotate_right</span></button>
+                </div>
+                <div class="flex bg-slate-200 dark:bg-slate-700 rounded-full p-1 shadow-inner">
+                   <button onclick="cropper.scaleX(cropper.getData().scaleX === -1 ? 1 : -1)" title="Voltear Horizontal" class="size-10 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors shadow-sm"><span class="material-symbols-outlined text-sm">flip</span></button>
+                </div>
+            </div>
+            <button onclick="saveCroppedImage()" class="w-full sm:w-auto bg-primary text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all flex justify-center items-center gap-3">
+                <span class="material-symbols-outlined">done_all</span> Aplicar Recorte
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-    document.getElementById('image-input').onchange = evt => {
-        const [file] = evt.target.files;
-        if (file) {
-            const preview = document.getElementById('preview');
-            preview.src = URL.createObjectURL(file);
-            preview.classList.remove('hidden');
+    let cropper;
+    const cropperModal = document.getElementById('cropper-modal');
+    const imageToCrop = document.getElementById('cropper-image');
+    const previewImg = document.getElementById('preview-img');
+    const uploadPlaceholder = document.getElementById('upload-placeholder');
+    const changeOverlay = document.getElementById('change-overlay');
+    const croppedImageInput = document.getElementById('cropped_image_input');
+    const dropZone = document.getElementById('drop-zone');
+    const loader = document.getElementById('cropper-loader');
+
+    // Drag and drop handler
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('scale-[1.01]', 'border-primary', 'bg-primary/5');
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.match('image.*')) {
+                // Temporarily assign it to input for compatibility just in case
+                try {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    document.getElementById('image-input').files = dt.files;
+                } catch(err) {} 
+                processFile(file);
+            } else {
+                alert("Por favor inserta solo imágenes válidas.");
+            }
+        }
+    }
+
+    // Standard input change handler
+    function openCropperMenu(input) {
+        if (input.files && input.files[0]) {
+            processFile(input.files[0]);
+        }
+    }
+
+    // Process file and launch modal
+    function processFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imageToCrop.src = e.target.result;
+            imageToCrop.classList.remove('opacity-0');
+            cropperModal.classList.remove('hidden');
+            cropperModal.classList.add('flex');
+            
+            // Allow animation frame
+            setTimeout(() => {
+                if (cropper) {
+                    cropper.destroy();
+                }
+                cropper = new Cropper(imageToCrop, {
+                    viewMode: 1,
+                    aspectRatio: NaN, // Free ratio, or set to 1 for square, etc.
+                    dragMode: 'move',
+                    autoCropArea: 0.9,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            }, 100);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function closeCropperModal() {
+        cropperModal.classList.add('hidden');
+        cropperModal.classList.remove('flex');
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        imageToCrop.src = "";
+    }
+
+    function saveCroppedImage() {
+        if (!cropper) return;
+        
+        loader.classList.remove('hidden');
+
+        // Optional: reduce rendering size drastically if needed
+        const canvas = cropper.getCroppedCanvas({
+            maxWidth: 1280,
+            maxHeight: 1280,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+        });
+
+        if (canvas) {
+            // Convert to base64
+            const base64Image = canvas.toDataURL('image/png'); // or 'image/jpeg'
+            
+            // Set values to form
+            previewImg.src = base64Image;
+            previewImg.classList.remove('hidden');
+            uploadPlaceholder.classList.add('hidden');
+            changeOverlay.classList.remove('hidden');
+            changeOverlay.classList.add('group-hover:opacity-100');
+            
+            croppedImageInput.value = base64Image;
+
+            // Cleanup & close
+            closeCropperModal();
+            loader.classList.add('hidden');
         }
     }
 </script>
+
+<!-- Add a small CSS adjustment for cropper container to be stable -->
+<style>
+.cropper-view-box,
+.cropper-face {
+  border-radius: 0;
+}
+/* Ensure the cropper image doesn't overflow */
+.cropper-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+</style>
+
 {% endblock %}

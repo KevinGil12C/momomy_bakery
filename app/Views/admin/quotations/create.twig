@@ -52,17 +52,36 @@
                         <span class="material-symbols-outlined text-primary">description</span> Detalles del Presupuesto
                     </h3>
                     <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Asunto / Título</label>
-                            <input type="text" name="subject" required value="{{ quotation.subject }}"
-                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm"
-                                placeholder="Ej: Cotización para Evento - Pastel de 3 pisos">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Asunto / Título</label>
+                                <input type="text" name="subject" required value="{{ quotation.subject }}"
+                                    class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm"
+                                    placeholder="Ej: Cotización para Evento">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Estado de la Cotización</label>
+                                <div class="relative">
+                                    <select name="status" class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm appearance-none pr-10">
+                                        <option value="draft" {% if quotation.status == 'draft' %}selected{% endif %}>Borrador (En Espera)</option>
+                                        <option value="sent" {% if quotation.status == 'sent' %}selected{% endif %}>Enviada (A la espera del cliente)</option>
+                                        <option value="accepted" {% if quotation.status == 'accepted' %}selected{% endif %}>Aceptada (Marcar como Venta Activa)</option>
+                                        <option value="rejected" {% if quotation.status == 'rejected' %}selected{% endif %}>Rechazada / Cancelada</option>
+                                    </select>
+                                    <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+                                </div>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Contenido / Descripción de Productos</label>
-                            <textarea name="content" rows="6" required
-                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none mb-4"
-                                placeholder="Describe el pedido, cantidades y precios...">{{ quotation.content }}</textarea>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 px-1">Mensaje/Desglose Original del Cliente</label>
+                            <textarea name="content" rows="4" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-background-light dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none mb-4 opacity-80"
+                                placeholder="..." readonly>{{ quotation.content }}</textarea>
+                                
+                            <label class="block text-sm font-bold text-primary mb-2 px-1">Tu Respuesta / Propuesta Detallada (Chef)</label>
+                            <textarea name="admin_response" rows="8" required
+                                class="w-full px-4 py-3 rounded-2xl border-0 bg-primary/5 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none shadow-sm resize-none mb-4 border border-primary/20"
+                                placeholder="Escribe aquí los precios, tamaños y condiciones detalladas para el cliente...">{{ quotation.admin_response }}</textarea>
                             
                             <label class="flex items-center gap-3 cursor-pointer group p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 hover:border-primary/30 transition-all">
                                 <div class="relative">

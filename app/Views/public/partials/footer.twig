@@ -6,8 +6,12 @@
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
         <div class="space-y-6">
             <div class="flex items-center gap-3 text-white">
-                <span class="material-symbols-outlined text-4xl text-primary italic">bakery_dining</span>
-                <span class="text-2xl font-black italic tracking-tighter">Momomi<span class="text-primary italic">Bakery</span></span>
+                {% if app_sys.logo_url %}
+                    <img src="{{ app_sys.logo_url }}" class="size-10 object-contain mix-blend-screen opacity-90 sepia-[.3]" alt="{{ app_sys.business_name }}">
+                {% else %}
+                    <span class="material-symbols-outlined text-4xl text-primary italic">bakery_dining</span>
+                {% endif %}
+                <span class="text-2xl font-black italic tracking-tighter">{{ app_sys.business_name|default('MomomiBakery') }}</span>
             </div>
             <p class="text-sm leading-relaxed opacity-60 font-medium italic">
                 Haciendo el mundo un lugar más dulce y tierno. Visítanos y descubre la magia artesanal en cada bocado, hecha con el corazón.
@@ -52,7 +56,7 @@
     <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
         <div class="flex flex-col md:flex-row items-center gap-6">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 italic">
-                © {{ current_year }} Momomi Bakery. Hecho con amor.
+                © {{ current_year }} {{ app_sys.business_name|default('Momomi Bakery') }}. Hecho con amor.
             </p>
             <div class="flex gap-4">
                 <a href="{{ base_url }}privacy" class="text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-primary transition-colors">Aviso de Privacidad</a>

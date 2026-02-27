@@ -1,0 +1,249 @@
+{% extends "public/layout.twig" %}
+
+{% block content %}
+<div class="pt-24 pb-20 px-6 lg:px-20 min-h-[80vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background-light to-background-light dark:from-primary/10 dark:via-background-dark dark:to-background-dark font-sans relative">
+    
+    <!-- Background Patterns -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="absolute top-20 right-0 size-[600px] bg-primary/5 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-10 left-10 size-[500px] bg-blue-500/5 rounded-full blur-[100px]"></div>
+        <div class="absolute inset-0 bg-[url('{{ base_url }}public/img/pattern.svg')] opacity-[0.02] dark:opacity-[0.05]"></div>
+    </div>
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Back action -->
+        <a href="{{ base_url }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary transition-colors mb-8 group">
+            <span class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+            Volver al Inicio
+        </a>
+
+        <!-- Main Document Container -->
+        <div class="bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-slate-800 relative z-10 transition-all hover:shadow-primary/10">
+            
+            <!-- Document Status Ribbon -->
+            <div class="absolute top-0 right-0 w-48 h-48 overflow-hidden z-20 pointer-events-none">
+                <div class="absolute top-0 right-0 bg-gradient-to-r {{ quotation.status == 'draft' ? 'from-amber-500 to-yellow-400' : (quotation.status == 'sent' ? 'from-blue-600 to-cyan-500' : (quotation.status == 'accepted' ? 'from-emerald-500 to-teal-400' : 'from-red-600 to-rose-500')) }} text-white font-black text-[11px] uppercase tracking-[0.25em] text-center py-2.5 translate-x-[65px] translate-y-[40px] rotate-45 w-[250px] shadow-xl">
+                    {{ quotation.status == 'draft' ? 'En Borrador' : (quotation.status == 'sent' ? 'Propuesta Enviada' : (quotation.status == 'accepted' ? 'Propuesta Aceptada' : 'Propuesta Declinada')) }}
+                </div>
+            </div>
+
+            <!-- Top Header (Company vs Document Info) -->
+            <div class="px-10 py-12 md:px-16 md:py-16 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/20">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
+                    
+                    <!-- Company Branding -->
+                    <div class="flex items-center gap-6">
+                        <div class="size-20 rounded-3xl bg-white dark:bg-slate-800 shadow-xl flex items-center justify-center p-3 border border-slate-100 dark:border-slate-700 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            {% if app_sys.logo_url %}
+                                <img src="{{ app_sys.logo_url }}" class="w-full h-full object-contain relative z-10 drop-shadow-sm" alt="Logo">
+                            {% else %}
+                                <span class="material-symbols-outlined text-4xl text-primary relative z-10">bakery_dining</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-1">{{ app_sys.business_name|default('Momomi Bakery') }}</h2>
+                            <p class="text-sm font-medium text-primary tracking-wide uppercase">Repostería Artesanal Premium</p>
+                        </div>
+                    </div>
+
+                    <!-- Quotation Meta -->
+                    <div class="text-left md:text-right space-y-2 w-full md:w-auto p-6 md:p-0 bg-white/50 dark:bg-slate-800/50 md:bg-transparent rounded-2xl border border-slate-100 md:border-none dark:border-slate-700/50 md:dark:border-none">
+                        <h1 class="text-4xl md:text-5xl font-black text-slate-200 dark:text-slate-800 tracking-tighter uppercase leading-none mb-4 hidden md:block">Cotización</h1>
+                        <div class="flex items-center md:justify-end gap-3 text-sm text-slate-600 dark:text-slate-400">
+                            <span class="font-bold text-slate-900 dark:text-slate-200">Ref / Folio:</span>
+                            <span class="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-black tracking-widest">{{ quotation.id | trim | slice(0,8) }}#{{ quotation.id }}</span>
+                        </div>
+                        <div class="flex items-center md:justify-end gap-3 text-sm text-slate-600 dark:text-slate-400">
+                            <span class="font-bold text-slate-900 dark:text-slate-200">Emisión:</span>
+                            <span class="font-medium tracking-wide">{{ quotation.sent_at|date('d F Y', 'America/Mexico_City') }}</span>
+                        </div>
+                        <div class="flex items-center md:justify-end gap-3 text-sm text-slate-600 dark:text-slate-400">
+                            <span class="font-bold text-slate-900 dark:text-slate-200">Expira:</span>
+                            <span class="font-medium tracking-wide">{{ quotation.sent_at|date_modify("+15 days")|date('d F Y') }}</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Entities Info (From -> To) -->
+            <div class="px-10 py-10 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-12 border-b border-slate-100 dark:border-slate-800/80">
+                
+                <!-- From (Business Config) -->
+                <div>
+                    <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[1rem]">storefront</span> De / Emitido Por
+                    </h5>
+                    <div class="space-y-1">
+                        <p class="font-bold text-lg text-slate-900 dark:text-white">{{ app_sys.business_name|default('Momomi Bakery') }}</p>
+                        <p class="text-sm text-slate-500 font-medium">Sucursal Principal</p>
+                        {% if app_sys.phone %}
+                        <p class="text-sm text-slate-600 dark:text-slate-400 font-medium pt-2 flex items-center gap-2"><span class="material-symbols-outlined text-sm opacity-50">call</span> {{ app_sys.phone }}</p>
+                        {% endif %}
+                        {% if app_sys.email %}
+                        <p class="text-sm text-slate-600 dark:text-slate-400 font-medium flex items-center gap-2"><span class="material-symbols-outlined text-sm opacity-50">mail</span> {{ app_sys.email }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- To (Client) -->
+                <div>
+                    <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[1rem]">person</span> Para / Cliente
+                    </h5>
+                    <div class="bg-primary/5 dark:bg-primary/10 rounded-2xl p-6 border border-primary/10 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 size-20 bg-primary/10 rounded-full blur-xl"></div>
+                        <p class="font-black text-xl text-primary mb-1 relative z-10">{{ quotation.customer_first_name }} {{ quotation.customer_last_name }}</p>
+                        <a href="mailto:{{ quotation.customer_email }}" class="text-sm text-slate-700 dark:text-slate-300 font-medium hover:text-primary transition-colors flex items-center gap-2 relative z-10">
+                            <span class="material-symbols-outlined text-sm opacity-50">mail</span> {{ quotation.customer_email }}
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Quotation Body -->
+            <div class="px-10 py-12 md:px-16 space-y-10">
+                
+                <!-- Subject -->
+                <div>
+                    <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[1rem]">label</span> Proyecto / Asunto
+                    </h5>
+                    <div class="inline-block border-l-4 border-primary pl-4 py-1">
+                        <h3 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight">
+                            {{ quotation.subject }}
+                        </h3>
+                    </div>
+                </div>
+
+                <!-- Request vs Response -->
+                <div class="space-y-12">
+                    
+                    <!-- Customer Request -->
+                    <div>
+                        <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[1rem]">format_list_bulleted</span> Requerimientos Iniciales del Cliente
+                        </h5>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/30 rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-inner relative overflow-hidden group">
+                            <!-- Decorative Icon -->
+                            <span class="material-symbols-outlined text-[6rem] absolute -top-4 -right-4 text-slate-200 dark:text-slate-800/80 rotate-180 pointer-events-none select-none">chat</span>
+                            
+                            <div class="prose prose-slate dark:prose-invert max-w-none relative z-10 prose-p:leading-relaxed prose-p:text-slate-600 dark:prose-p:text-slate-400">
+                                {{ quotation.content|raw|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Response -->
+                    {% if quotation.admin_response %}
+                    <div>
+                        <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[1rem]">verified</span> Nuestra Propuesta Oficial (Respuesta)
+                        </h5>
+                        
+                        <div class="bg-primary/5 dark:bg-primary/10 rounded-3xl p-8 md:p-10 border border-primary/20 shadow-inner relative overflow-hidden group">
+                            
+                            <!-- Decorative Quote Icon -->
+                            <span class="material-symbols-outlined text-[8rem] absolute -top-6 -right-6 text-primary/10 rotate-180 pointer-events-none select-none">format_quote</span>
+
+                            <div class="prose prose-lg prose-slate dark:prose-invert max-w-none relative z-10
+                                        prose-p:leading-8 prose-p:text-slate-800 dark:prose-p:text-slate-200 prose-p:font-medium
+                                        prose-strong:text-primary prose-strong:font-black
+                                        prose-ul:list-disc prose-ul:pl-5">
+                                {{ quotation.admin_response|raw|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Attachments Grid -->
+                {% if quotation.reference_image or quotation.pdf_path %}
+                <div class="pt-6">
+                    <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[1rem]">attachment</span> Archivos y Referencias Adjuntas
+                    </h5>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- Formal PDF Download -->
+                        {% if quotation.pdf_path %}
+                        <div class="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1">
+                            <div class="absolute right-0 top-0 size-32 opacity-[0.03] transition-transform duration-500 group-hover:scale-150 rotate-12">
+                                <span class="material-symbols-outlined text-[8rem]">picture_as_pdf</span>
+                            </div>
+                            
+                            <div class="relative z-10 flex flex-col h-full">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <div class="size-14 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md">
+                                        <span class="material-symbols-outlined text-3xl text-red-400">picture_as_pdf</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg leading-tight">Documento Oficial</h4>
+                                        <p class="text-[11px] font-medium text-slate-400 tracking-widest uppercase">Formato PDF</p>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-sm text-slate-300 font-medium mb-8 flex-grow">Descarga este archivo para visualizar la propuesta estructurada formalmente, precios precisos y firma de validación.</p>
+                                
+                                <a href="{{ base_url }}public/storage/quotations/{{ quotation.pdf_path }}" download class="w-full inline-flex items-center justify-center gap-2 bg-white text-slate-900 py-3.5 rounded-xl font-black text-xs tracking-widest uppercase transition-all hover:bg-primary hover:text-white shadow-lg shadow-white/10 hover:shadow-primary/30 active:scale-[0.98]">
+                                    <span class="material-symbols-outlined text-lg">cloud_download</span> Descargar PDF
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Reference Image Display -->
+                        {% if quotation.reference_image %}
+                        <div class="group relative overflow-hidden rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131b2c] shadow-lg aspect-[4/3] md:aspect-auto h-[320px]">
+                            
+                            <div class="absolute inset-x-0 top-0 p-4 bg-gradient-to-b from-black/60 to-transparent z-10 text-white flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="text-xs font-black tracking-widest uppercase flex items-center gap-2"><span class="material-symbols-outlined text-sm">image</span> Referencia Visual</span>
+                            </div>
+
+                            <img src="{{ quotation.reference_image }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105" alt="Diseño de Referencia">
+                            
+                            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                <a href="{{ quotation.reference_image }}" target="_blank" class="bg-white text-slate-900 size-16 rounded-full flex items-center justify-center shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-primary hover:text-white hover:scale-110 duration-500 delay-100">
+                                    <span class="material-symbols-outlined text-2xl">zoom_in_map</span>
+                                </a>
+                                <p class="text-white text-sm font-bold mt-4 tracking-wide transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-150">Ampliar Imagen</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Pre Footer Notes -->
+            <div class="px-10 py-8 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-start gap-4 text-slate-500 dark:text-slate-400 text-sm font-medium">
+                    <span class="material-symbols-outlined text-emerald-500 shrink-0">info</span>
+                    <p>Esta propuesta es confidencial y válida por los siguientes 15 días posteriores a su emisión. Todos los precios detallados en el PDF oficial están sujetos a cambios sin previo aviso de no confirmarse en dicho plazo. Si requieres modificaciones en sabores, diseños o cantidad de porciones, no dudes en contactarnos directamente para generar un ajuste.</p>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="px-10 py-10 md:px-16 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col items-center text-center">
+                 <h4 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-2">¿Listo para hacer magia? ✨</h4>
+                 <p class="text-sm font-medium text-slate-500 mb-8 max-w-lg">Resuelve cualquier inquietud y confirma tu orden con nuestro equipo al instante a través de WhatsApp.</p>
+                 
+                 <a href="https://wa.me/{{ app_sys.phone|default(config.MAIL) }}" target="_blank" class="inline-flex items-center gap-3 bg-gradient-to-r from-[#20bd5a] to-[#25D366] text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest shadow-xl shadow-[#25D366]/30 hover:shadow-[#25D366]/50 hover:scale-[1.03] transition-all active:scale-95 group overflow-hidden relative">
+                    <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
+                    <svg class="size-6 fill-current relative z-10 group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.432 5.633 1.433h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path>
+                    </svg>
+                    <span class="relative z-10 text-white">Contactar a mi Asesor por WhatsApp</span>
+                 </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

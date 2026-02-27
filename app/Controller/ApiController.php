@@ -162,7 +162,8 @@ class ApiController extends Controller
             'content'             => $data['content'] ?? '',
             'reference_image'     => $imageUrl,
             'status'              => 'draft',
-            'sent_at'             => date('Y-m-d H:i:s')
+            'sent_at'             => date('Y-m-d H:i:s'),
+            'tracking_token'      => md5(uniqid(rand(), true))
         ];
 
         $this->db->insert('quotations', $quotationData);

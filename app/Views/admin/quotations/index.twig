@@ -67,8 +67,16 @@
                                     {% endif %}
                                     {% if quotation.pdf_path %}
                                     <a href="{{ base_url }}admin/quotations/download/{{ quotation.pdf_path }}" target="_blank"
-                                       class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                                       class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all"
+                                       title="Descargar PDF">
                                         <span class="material-symbols-outlined text-xl">picture_as_pdf</span>
+                                    </a>
+                                    {% endif %}
+                                    {% if quotation.tracking_token and quotation.status != 'draft' %}
+                                    <a href="{{ base_url }}quotation/{{ quotation.tracking_token }}" target="_blank"
+                                       class="size-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all"
+                                       title="Ver Cotización en Línea">
+                                        <span class="material-symbols-outlined text-xl">link</span>
                                     </a>
                                     {% endif %}
                                     <a href="{{ base_url }}admin/quotations/delete/{{ quotation.id }}" 

@@ -5,10 +5,14 @@
     <div class="w-full max-w-md">
         <!-- Logo/Header -->
         <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center size-16 rounded-3xl bg-primary text-white shadow-xl shadow-primary/30 mb-6">
-                <span class="material-symbols-outlined text-4xl">bakery_dining</span>
+            <div class="inline-flex items-center justify-center size-16 rounded-3xl bg-primary text-white shadow-xl shadow-primary/30 mb-6 overflow-hidden relative">
+                {% if app_sys.logo_url %}
+                    <img src="{{ app_sys.logo_url }}" class="absolute inset-0 w-full h-full object-cover" alt="Logo">
+                {% else %}
+                    <span class="material-symbols-outlined text-4xl">bakery_dining</span>
+                {% endif %}
             </div>
-            <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Admin Momomy</h1>
+            <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Admin {{ app_sys.business_name|default('Momomy') }}</h1>
             <p class="text-slate-500 dark:text-slate-400 mt-2">Bienvenida de nuevo, Chef</p>
         </div>
 
@@ -64,7 +68,7 @@
 
         <!-- Footer -->
         <p class="text-center mt-10 text-sm text-slate-500 dark:text-slate-500">
-            &copy; {{ "now"|date("Y") }} Momomy Bakery &bull; Panel de Gestión
+            &copy; {{ "now"|date("Y") }} {{ app_sys.business_name|default('Momomy Bakery') }} &bull; Panel de Gestión
         </p>
     </div>
 </div>

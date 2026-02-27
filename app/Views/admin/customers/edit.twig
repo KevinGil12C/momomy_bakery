@@ -1,0 +1,115 @@
+{% extends "admin/layout.twig" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    {% include 'admin/partials/sidebar.twig' with {'active': 'customers'} %}
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <!-- Decoration Background -->
+        <div class="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
+
+        <!-- Header -->
+        {% include 'admin/partials/header.twig' with {'breadcrumbs': [
+            {label: 'Catálogo de Clientes', url: 'admin/customers'},
+            {label: 'Editar Perfil', url: '#'}
+        ]} %}
+
+        <div class="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar relative">
+            <div class="max-w-4xl mx-auto space-y-8">
+                
+                <!-- Page Title -->
+                <div class="flex flex-col mb-8 text-center items-center">
+                    <div class="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-3xl shadow-inner mb-4">
+                        {{ customer.first_name|first|upper }}
+                    </div>
+                    <h2 class="text-3xl font-black text-slate-900 dark:text-white truncate max-w-full">
+                        {{ customer.first_name }} {{ customer.last_name }}
+                    </h2>
+                    <p class="text-slate-500 text-sm font-medium mt-1">Miembro de la comunidad desde {{ customer.created_at|date('M Y') }}</p>
+                </div>
+
+                <!-- Update Form -->
+                <form action="{{ base_url }}admin/customers/update/{{ customer.id }}" method="POST" class="glass rounded-[2.5rem] p-8 border border-white/20 shadow-2xl relative overflow-hidden">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Nombre(s) <span class="text-rose-500">*</span></label>
+                            <input type="text" name="first_name" required value="{{ customer.first_name }}"
+                                class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300"
+                                placeholder="Ingresa el nombre">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1">Apellido(s) <span class="text-rose-500">*</span></label>
+                            <input type="text" name="last_name" required value="{{ customer.last_name }}"
+                                class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300"
+                                placeholder="Ingresa el apellido">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">mail</span> Correo Electrónico <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="email" name="email" required value="{{ customer.email }}"
+                                class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300"
+                                placeholder="correo@ejemplo.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold tracking-widest uppercase text-slate-400 mb-2 px-1 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">call</span> Teléfono 
+                            </label>
+                            <input type="text" name="phone" value="{{ customer.phone }}"
+                                class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary/50 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner font-medium placeholder:text-slate-300"
+                                placeholder="+52 ...">
+                        </div>
+                    </div>
+
+                    <div class="mb-8 p-6 bg-rose-50/50 dark:bg-rose-900/10 rounded-3xl border border-rose-100 dark:border-rose-900/30">
+                        <label class="block text-sm font-bold tracking-widest uppercase text-rose-500 mb-2 px-1 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">lock_reset</span> Cambiar Contraseña del Portal
+                        </label>
+                        <p class="text-xs text-rose-400 mb-4 px-1 font-medium italic">Deja este campo vacío si NO deseas modificar la contraseña del cliente.</p>
+                        <div class="relative group">
+                            <input type="password" name="password" id="password"
+                                class="w-full px-5 py-4 rounded-2xl border-2 border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none shadow-sm font-medium tracking-widest placeholder:text-slate-300 placeholder:tracking-normal focus:border-rose-300 dark:focus:border-rose-700 focus:ring-4 focus:ring-rose-500/10 transition-all"
+                                placeholder="Nueva contraseña secreta">
+                            <button type="button" onclick="togglePasswordVisibility('password')" class="absolute inset-y-0 right-0 px-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-transparent border-0 outline-none">
+                                <span class="material-symbols-outlined text-[1.2rem] pointer-events-none select-none transition-transform active:scale-90" id="password-hide-icon">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-8 mt-8 border-t border-slate-100 dark:border-slate-800">
+                        <a href="{{ base_url }}admin/customers" class="text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined">close</span> Cancelar
+                        </a>
+                        <button type="submit" class="bg-primary text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-3">
+                            <span class="material-symbols-outlined">save</span> Guardar Datos
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(inputId + '-hide-icon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerText = 'visibility_off';
+    } else {
+        input.type = 'password';
+        icon.innerText = 'visibility';
+    }
+}
+</script>
+{% endblock %}

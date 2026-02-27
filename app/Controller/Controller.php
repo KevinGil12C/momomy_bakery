@@ -55,6 +55,18 @@ class Controller
         $this->twig->addGlobal('session', $_SESSION);
         $this->twig->addGlobal('current_year', date('Y'));
         $this->twig->addGlobal('config', new \App\config\Config());
+
+        // Load Business Settings Globally
+        try {
+            $db = new \App\Models\Database();
+            $business = $db->getOne('business_settings', ['id' => 1]);
+            if ($business && !empty($business['logo_url'])) {
+                $business['logo_url'] = escapeshellcmd($this->normalizeImageUrl($business['logo_url']));
+            }
+            $this->twig->addGlobal('app_sys', $business ?: ['business_name' => 'Momomy Bakery']);
+        } catch (\Exception $e) {
+            $this->twig->addGlobal('app_sys', ['business_name' => 'Momomy Bakery']);
+        }
     }
 
     /**

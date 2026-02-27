@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <meta name="description" content="Momomy Bakery - Repostería artesanal con el corazón. Descubre nuestros pasteles, galletas y postres únicos hechos con ingredientes premium.">
-    <meta name="keywords" content="repostería, pastelería, postres, mochi, pasteles artesanales, Momomy Bakery">
+    <meta name="description" content="{{ app_sys.business_name|default('Momomy Bakery') }} - Repostería artesanal con el corazón. Descubre nuestros pasteles, galletas y postres únicos hechos con ingredientes premium.">
+    <meta name="keywords" content="repostería, pastelería, postres, mochi, pasteles artesanales, {{ app_sys.business_name|default('Momomy Bakery') }}">
     
     <!-- Open Graph / Social Media -->
-    <meta property="og:title" content="{{ title }} | Momomy Bakery">
+    <meta property="og:title" content="{{ title }} | {{ app_sys.business_name|default('Momomy Bakery') }}">
     <meta property="og:description" content="Repostería artesanal con el corazón. Haz tu pedido hoy mismo.">
     <meta property="og:image" content="{{ base_url }}public/img/og-image.jpg">
     <meta property="og:type" content="website">
 
-    <title>{{ title }} | Momomy Bakery - Magia Hecha Postre</title>
+    <title>{{ title }} | {{ app_sys.business_name|default('Momomy Bakery') }} - Magia Hecha Postre</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">

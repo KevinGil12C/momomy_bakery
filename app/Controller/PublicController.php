@@ -138,6 +138,23 @@ class PublicController extends Controller
     }
 
     /**
+     * View specific quotation by token
+     */
+    public function viewQuotation($token)
+    {
+        $quotation = $this->db->getOne('quotations', ['tracking_token' => $token]);
+
+        if (!$quotation) {
+            $this->redirect('quotation');
+        }
+
+        $this->showView('public/quotation_view.twig', [
+            'title' => 'Cotización Detallada',
+            'quotation' => $quotation
+        ]);
+    }
+
+    /**
      * Privacy Policy Page
      */
     public function privacy()

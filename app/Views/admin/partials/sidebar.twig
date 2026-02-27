@@ -1,9 +1,13 @@
 <aside id="main-sidebar" class="hidden lg:flex flex-col h-full glass border-r border-white/10 p-6 z-20 sidebar-expanded sidebar-transition overflow-hidden">
     <div class="flex items-center gap-4 mb-12 px-2">
-        <div onclick="toggleSidebar()" class="size-10 min-w-[40px] rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 cursor-pointer hover:scale-110 transition-transform">
-            <span class="material-symbols-outlined">bakery_dining</span>
+        <div onclick="toggleSidebar()" class="size-10 min-w-[40px] rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 cursor-pointer hover:scale-110 transition-transform overflow-hidden relative">
+            {% if app_sys.logo_url %}
+                <img src="{{ app_sys.logo_url }}" class="absolute inset-0 w-full h-full object-cover" alt="Logo">
+            {% else %}
+                <span class="material-symbols-outlined">bakery_dining</span>
+            {% endif %}
         </div>
-        <span id="logo-text" class="text-xl font-black text-slate-900 dark:text-white truncate">Momomy</span>
+        <span id="logo-text" class="text-xl font-black text-slate-900 dark:text-white truncate">{{ app_sys.business_name|default('Momomy') }}</span>
     </div>
 
     <nav class="flex-grow space-y-2">
@@ -45,6 +49,10 @@
         <a href="{{ base_url }}admin/subscribers" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'subscribers' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
             <span class="material-symbols-outlined min-w-[24px]">mail</span> 
             <span class="sidebar-label truncate">Suscriptores</span>
+        </a>
+        <a href="{{ base_url }}admin/customers" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'customers' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
+            <span class="material-symbols-outlined min-w-[24px]">groups</span> 
+            <span class="sidebar-label truncate">Clientes</span>
         </a>
         <a href="{{ base_url }}admin/users" class="flex items-center gap-4 px-4 py-3 rounded-2xl {{ active == 'users' ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary' }} transition-all group">
             <span class="material-symbols-outlined min-w-[24px]">group</span> 

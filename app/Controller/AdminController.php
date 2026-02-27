@@ -240,10 +240,33 @@ class AdminController extends Controller
      */
     private function handleImageUpload()
     {
+        if (!empty($_POST['cropped_image'])) {
+            $base64Data = $_POST['cropped_image'];
+            if (strpos($base64Data, 'data:image/') === 0) {
+                list($type, $data) = explode(';', $base64Data);
+                list(, $data)      = explode(',', $data);
+                $data = base64_decode($data);
+
+                $uploadDir = __DIR__ . '/../../public/uploads/products/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
+                $filename = time() . '_cropped.png';
+                if (file_put_contents($uploadDir . $filename, $data)) {
+                    return $this->baseUrl . 'public/uploads/products/' . $filename;
+                }
+            }
+        }
+
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $tmpPath = $_FILES['image']['tmp_name'];
             $filename = time() . '_' . $_FILES['image']['name'];
             $uploadDir = __DIR__ . '/../../public/uploads/products/';
+
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
 
             if (move_uploaded_file($tmpPath, $uploadDir . $filename)) {
                 return $this->baseUrl . 'public/uploads/products/' . $filename;
@@ -392,18 +415,34 @@ class AdminController extends Controller
     public function storeQuotation()
     {
         $id = $_POST['id'] ?? null;
+
+        $trackingToken = md5(uniqid(rand(), true));
+        $status = $_POST['status'] ?? 'sent';
+
+        if ($id) {
+            $existingQuote = $this->db->getOne('quotations', ['id' => $id]);
+            if ($existingQuote && !empty($existingQuote['tracking_token'])) {
+                $trackingToken = $existingQuote['tracking_token'];
+            }
+        }
+
         $data = [
             'customer_first_name' => $_POST['customer_first_name'] ?? '',
             'customer_last_name'  => $_POST['customer_last_name'] ?? '',
             'customer_email'      => $_POST['customer_email'] ?? '',
             'subject'             => $_POST['subject'] ?? '',
             'content'             => $_POST['content'] ?? '',
-            'status'              => 'sent',
-            'sent_at'             => date('Y-m-d H:i:s')
+            'admin_response'      => $_POST['admin_response'] ?? '',
+            'status'              => $status,
+            'sent_at'             => date('Y-m-d H:i:s'),
+            'tracking_token'      => $trackingToken
         ];
 
         // 1. Generate PDF
         $business = $this->db->getOne('business_settings', ['id' => 1]);
+        if (!empty($business['logo_url'])) {
+            $business['logo_url'] = $this->imageToBase64($business['logo_url']);
+        }
         $pdfService = new PdfService();
         $html = $this->renderTemplate('admin/quotations/pdf_template.twig', array_merge($data, ['business' => $business]));
 
@@ -430,8 +469,9 @@ class AdminController extends Controller
 
         // Prepare email body with HTML line breaks
         $emailBody = "Hola <b>{$customerName}</b>,<br><br>";
-        $emailBody .= nl2br($data['content']);
-        $emailBody .= "<br><br>Atentamente,<br><b>" . ($business['business_name'] ?? 'Momomy Bakery') . "</b>";
+        $emailBody .= nl2br($data['admin_response'] ?: $data['content']);
+        $emailBody .= "<br><br><a href='http://localhost/momomy_bakery/quotation/{$trackingToken}' style='display:inline-block; padding:10px 20px; background:#f0427c; color:#fff; text-decoration:none; border-radius:10px; font-weight:bold;'>Ver Cotización en Línea</a><br><br>";
+        $emailBody .= "Atentamente,<br><b>" . ($business['business_name'] ?? 'Momomy Bakery') . "</b>";
 
         $emailService->send(
             $data['customer_email'],
@@ -439,6 +479,36 @@ class AdminController extends Controller
             $emailBody,
             $attachPdf ? $pdfPath : null
         );
+
+        // 4. Create customer catalog entry if status is accepted
+        if ($status === 'accepted') {
+            $existingCustomer = $this->db->getOne('customers', ['email' => $data['customer_email']]);
+            if (!$existingCustomer) {
+                $rawPass = 'Tempo' . rand(100, 999) . '!';
+                $this->db->insert('customers', [
+                    'first_name' => $data['customer_first_name'],
+                    'last_name'  => $data['customer_last_name'],
+                    'email'      => $data['customer_email'],
+                    'password'   => password_hash($rawPass, PASSWORD_DEFAULT),
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+
+                $accountBody = "Hola <b>{$customerName}</b>,<br><br>";
+                $accountBody .= "Ya que tu cotización <b>'{$data['subject']}'</b> ha sido confirmada/aceptada, hemos creado automáticamente tu cuenta en nuestro portal de clientes oficial.<br><br>";
+                $accountBody .= "Ingresa al portal para tener el historial de tus compras y darle seguimiento a tus pedidos:<br><br>";
+                $accountBody .= "<a href='http://localhost/momomy_bakery/connect/login'><b>Acceder a Mi Portal</b></a><br><br>";
+                $accountBody .= "<b>Tu usuario:</b> {$data['customer_email']}<br>";
+                $accountBody .= "<b>Tu contraseña temporal:</b> {$rawPass}<br><br>";
+                $accountBody .= "Te sugerimos iniciar sesión para cambiar esta contraseña temporal por tu propia seguridad.<br><br>";
+                $accountBody .= "Atentamente,<br><b>" . ($business['business_name'] ?? 'Momomy Bakery') . "</b>";
+
+                $emailService->send(
+                    $data['customer_email'],
+                    "¡Bienvenido(a) a " . ($business['business_name'] ?? 'Momomy Bakery') . "! (Credenciales de Acceso)",
+                    $accountBody
+                );
+            }
+        }
 
         $this->redirect('admin/quotations');
     }
@@ -476,13 +546,20 @@ class AdminController extends Controller
 
         $pdfService = new PdfService();
         $business = $this->db->getOne('business_settings', ['id' => 1]);
+        if (!empty($business['logo_url'])) {
+            $business['logo_url'] = $this->imageToBase64($business['logo_url']);
+        }
         $trackingUrl = $this->baseUrl . 'connect/order/' . ($order['tracking_token'] ?? $order['id']);
+
+        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' . urlencode($trackingUrl);
+        $qrCodeBase64 = $this->imageToBase64($qrCodeUrl);
 
         $html = $this->renderTemplate('admin/orders/receipt_template.twig', [
             'order' => $order,
             'items' => $items,
             'business' => $business,
-            'tracking_url' => $trackingUrl
+            'tracking_url' => $trackingUrl,
+            'qr_code_base64' => $qrCodeBase64
         ]);
 
         $pdfService->stream($html, 'nota_venta_' . $orderId . '.pdf');
@@ -576,6 +653,65 @@ class AdminController extends Controller
         $_SESSION['user_name'] = $data['first_name'] . ' ' . $data['last_name'];
 
         $this->redirect('admin/profile');
+    }
+
+    /**
+     * Show Customers list
+     */
+    public function customers()
+    {
+        $customers = $this->db->getAll('customers', [], 'created_at DESC');
+        $this->showView('admin/customers/index.twig', [
+            'title' => 'Catálogo de Clientes',
+            'customers' => $customers
+        ]);
+    }
+
+    /**
+     * Edit Customer 
+     */
+    public function editCustomer($id)
+    {
+        $customer = $this->db->getOne('customers', ['id' => $id]);
+        if (!$customer) {
+            $this->redirect('admin/customers');
+        }
+
+        $this->showView('admin/customers/edit.twig', [
+            'title' => 'Editar Cliente',
+            'customer' => $customer
+        ]);
+    }
+
+    /**
+     * Update Customer
+     */
+    public function updateCustomer($id)
+    {
+        $data = [
+            'first_name' => $_POST['first_name'] ?? '',
+            'last_name'  => $_POST['last_name'] ?? '',
+            'email'      => $_POST['email'] ?? '',
+            'phone'      => $_POST['phone'] ?? ''
+        ];
+
+        // Also update password if provided
+        if (!empty($_POST['password'])) {
+            $data['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        }
+
+        $this->db->update('customers', $data, ['id' => $id]);
+        $this->redirect('admin/customers');
+    }
+
+    /**
+     * Delete Customer
+     */
+    public function deleteCustomer($id)
+    {
+        // Opt: check for dependencies like orders/quotations before deleting. But let's keep it simple.
+        $this->db->delete('customers', ['id' => $id]);
+        $this->redirect('admin/customers');
     }
 
     /**
@@ -930,5 +1066,36 @@ class AdminController extends Controller
             }
         }
         return null;
+    }
+
+    /**
+     * Helper to convert an image URL to a local absolute path or Base64 URI.
+     * Required to avoid timeouts with php's single threaded dev server and dompdf.
+     */
+    private function imageToBase64($url)
+    {
+        if (empty($url)) return null;
+
+        $localPath = str_replace($this->baseUrl, realpath(__DIR__ . '/../../') . '/', $url);
+        $localPath = str_replace('/', DIRECTORY_SEPARATOR, $localPath);
+
+        if (file_exists($localPath)) {
+            $data = file_get_contents($localPath);
+            $type = pathinfo($localPath, PATHINFO_EXTENSION);
+            if (strtolower($type) == 'jpg') $type = 'jpeg';
+            return 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
+
+        try {
+            $context = stream_context_create(['http' => ['timeout' => 5]]);
+            $data = @file_get_contents($url, false, $context);
+            if ($data) {
+                // If it's a QR code, assuming PNG
+                return 'data:image/png;base64,' . base64_encode($data);
+            }
+        } catch (\Exception $e) {
+        }
+
+        return $url;
     }
 }

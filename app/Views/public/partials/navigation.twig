@@ -7,9 +7,13 @@
             </button>
             <a href="{{ base_url }}" class="flex items-center gap-3" aria-label="Volver al inicio">
                 <div class="size-10 flex items-center justify-center text-primary">
-                    <span class="material-symbols-outlined text-4xl" aria-hidden="true">bakery_dining</span>
+                    {% if app_sys.logo_url %}
+                        <img src="{{ app_sys.logo_url }}" class="w-full h-full object-contain drop-shadow-sm" alt="{{ app_sys.business_name }}">
+                    {% else %}
+                        <span class="material-symbols-outlined text-4xl" aria-hidden="true">bakery_dining</span>
+                    {% endif %}
                 </div>
-                <span class="text-xl font-extrabold tracking-tight text-primary">Momomi</span>
+                <span class="text-xl font-extrabold tracking-tight text-primary">{{ app_sys.business_name|default('Momomi') }}</span>
             </a>
         </div>
         
